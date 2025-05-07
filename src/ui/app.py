@@ -60,30 +60,42 @@ class WordleGameUI(BoxLayout):
         self.title_bar.add_widget(title_label)
         self.add_widget(self.title_bar)
         
-        # Spacer to center content vertically
-        self.add_widget(BoxLayout(size_hint=(1, 0.05)))
+        # Main content area - centers the grid vertically and horizontally
+        content_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.6))
         
-        # Tile grid - Perfectly square tiles with space between
+        # Add top spacer to push grid downward for vertical centering
+        content_layout.add_widget(BoxLayout(size_hint=(1, 0.1)))
+        
+        # Grid container for horizontal centering
+        grid_container = BoxLayout(size_hint=(0.8, 0.8))
+        grid_container.add_widget(BoxLayout(size_hint=(0.1, 1)))  # Left spacer
+        
+        # Tile grid - 6 rows x 5 columns
         self.grid = GridLayout(
             cols=WORD_LENGTH,
             rows=NUM_ATTEMPTS,
-            spacing=6,
-            size_hint=(1, 0.5),
-            padding=[20, 20, 20, 20]
+            spacing=8,  # Consistent 8px spacing
+            size_hint=(0.8, 1),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
         )
         
-        # Create tiles with the new design
+        # Create tiles with the updated design
         self.tiles = [[Tile() for _ in range(WORD_LENGTH)] for _ in range(NUM_ATTEMPTS)]
         for row in self.tiles:
             for tile in row:
                 self.grid.add_widget(tile)
         
-        self.add_widget(self.grid)
+        grid_container.add_widget(self.grid)
+        grid_container.add_widget(BoxLayout(size_hint=(0.1, 1)))  # Right spacer
         
-        # Spacer between grid and keyboard
-        self.add_widget(BoxLayout(size_hint=(1, 0.05)))
+        content_layout.add_widget(grid_container)
         
-        # Keyboard with new design
+        # Add bottom spacer for vertical centering
+        content_layout.add_widget(BoxLayout(size_hint=(1, 0.1)))
+        
+        self.add_widget(content_layout)
+        
+        # Keyboard with design
         self.keyboard = OnScreenKeyboard(size_hint=(1, 0.3))
         self.add_widget(self.keyboard)
         
