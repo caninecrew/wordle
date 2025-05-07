@@ -11,7 +11,8 @@ class WordList:
         self.load_words()
 
     def load_words(self):
-        data_dir = Path(__file__).parent / "data"
+        # Change from 'data_dir = Path(__file__).parent / "data"' to:
+        data_dir = Path(__file__).parent.parent / "data"
 
         # Load answer words
         with open(data_dir / "wordle-answers-alphabetical.txt", "r") as f:
