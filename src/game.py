@@ -65,8 +65,14 @@ class WordleGame:
             bool: True if the guess is valid, False otherwise
         """
 
+        # Debug prints
+        print(f"Debug - Guess: '{guess}'")
+        print(f"Debug - Guess length: {len(guess)}, Word length: {len(self.word)}")
+        print(f"Debug - Is alpha: {guess.isalpha()}")
+
         # Check if guess is empty or None
         if not guess:
+            print("Debug - Guess is empty")
             return False
         
         # Convert guess to lowercase
@@ -74,10 +80,12 @@ class WordleGame:
 
         # Check if guess is of the same length as the word
         if len(guess) != len(self.word):
+            print(f"Debug - Invalid guess length: {len(guess)}")
             return False
         
         # Check if guess contains only alphabetic characters (letters)
         if not guess.isalpha():
+            print(f"Debug - Invalid guess characters: {guess}")
             return False
         
         return True # If all checks pass, return True
