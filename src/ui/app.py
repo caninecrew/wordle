@@ -159,24 +159,56 @@ class WordleGameUI(BoxLayout):
         tile.animate_reveal()
     
     def show_invalid_word(self):
-        """Show animation for invalid word by shaking the entire row as a unit"""
-        # Get the current row's starting position
-        row_index = self.guess_index
-        first_tile = self.tiles[row_index][0]
-        row_x = first_tile.x
+        """Show animation for invalid word with proper shake and error message"""
+        row_tiles = self.tiles[self.guess_index]
+        start_pos = self.grid.pos
         
-        # Create a sequential shake animation for the entire row
-        anim = (
-            Animation(x=row_x - 10, duration=0.05) +
-            Animation(x=row_x + 10, duration=0.05) +
-            Animation(x=row_x - 6, duration=0.05) +
-            Animation(x=row_x + 6, duration=0.05) +
-            Animation(x=row_x, duration=0.05)
+        # Create a short toast message that appears and fades out
+        toast = Label(
+            text="Not in word list",
+            font_size=16,
+            color=(0, 0, 0, 1),
+            size_hint=(None, None),
+            size=(200, 40),
+            pos_hint={'center_x': 0.5},
+            opacity=0
         )
         
-        # Apply the same animation to all tiles in the row to keep them together
-        for tile in self.tiles[row_index]:
-            anim.start(tile)
+        # Add toast to the layout temporarily
+        self.add_widget(toast)
+        toast.pos = (self.width/2 - toast.width/2, self.grid.y - 40)
+        
+        # Fade in the toast
+        anim_in = Animation(opacity=1, duration=0.2)
+        # Hold it visible
+        anim_hold = Animation(opacity=1, duration=1.0) 
+        # Fade it out
+        anim_out = Animation(opacity=0, duration=0.5)
+        
+        # Chain animations
+        toast_anim = anim_in + anim_hold + anim_out
+        toast_anim.bind(on_complete=lambda *args: self.remove_widget(toast))
+        toast_anim.start(toast)
+        
+        # Shake animation for the grid
+        shake_anim = (
+            Animation(pos=(start_pos[0] - 10, start_pos[1]), duration=0.1) + 
+            Animation(pos=(start_pos[0] + 10, start_pos[1]), duration=0.1) + 
+            Animation(pos=(start_pos[0] - 5, start_pos[1]), duration=0.1) + 
+            Animation(pos=(start_pos[0] + 5, start_pos[1]), duration=0.1) + 
+            Animation(pos=start_pos, duration=0.1)
+        )
+        
+        shake_anim.start(self.grid)
+        
+        # After shake completes, clear the current guess
+        def clear_guess(dt):
+            for i in range(len(self.current_guess)):
+                tile = row_tiles[i]
+                tile.text = ""
+            self.current_guess = ""
+        
+        Clock.schedule_once(clear_guess, 1.5)
     
     def check_game_status(self):
         """Check if game is won or lost"""
