@@ -54,7 +54,12 @@ class WordleGameUI(BoxLayout):
             self.show_popup("Invalid guess", "Must be a valid 5-letter word.")
             return
 
-        result = self.game.make_guess(guess)  # Returns [(char, status), ...]
+        result = self.game.make_guess(guess)
+
+        # Ensure result is iterable and valid
+        if not isinstance(result, list):
+            self.show_popup("Error", "Unexpected result from game logic.")
+            return
 
         for col, (char, status) in enumerate(result):
             tile = self.tiles[self.guess_index][col]
