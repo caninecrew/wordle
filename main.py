@@ -15,7 +15,6 @@ def play_game():
     print("[A] - Correct letter in the correct position")
     print("(A) - Correct letter in the wrong position")
     print("A - Letter not in word")
-    print()
 
     while not game.game_over:
         guess = input("\nEnter your guess:").strip() # Get user input and strip whitespace
