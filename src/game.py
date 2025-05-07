@@ -1,3 +1,5 @@
+from .word_list import WordList
+
 class WordleGame:
     def __init__(self, word: str): # Constructor to initialize the game with a word
         self.word = word.lower() # The word to be guessed
