@@ -1,6 +1,18 @@
 from src.game import WordleGame
 import random
 
+def find_word():
+    """
+    Function to find a word from the word list.
+    """
+
+    word_list = []
+    with open("data/words.txt", "r") as file:
+        for line in file:
+            word_list.append(line.strip())
+
+    return random.choice(word_list)  # Randomly select a word from the list and return it
+
 def play_game():
     """
     Main function to play the Wordle game.
@@ -37,14 +49,3 @@ def play_game():
 if __name__ == "__main__":
     play_game()  # Start the game when the script is run directly
 
-def find_word():
-    """
-    Function to find a word from the word list.
-    """
-
-    word_list = []
-    with open("data/words.txt", "r") as file:
-        for line in file:
-            word_list.append(line.strip())
-
-    return random.choice(word_list)  # Randomly select a word from the list and return it
