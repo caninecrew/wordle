@@ -12,54 +12,28 @@ class WordleGame:
         self.max_streak = 0 # Maximum winning streak
         self.word_list = WordList() # Instance of WordList to access the word lists
 
-    def make_guess(self, guess: str) -> str:
+    def make_guess(self, guess: str) -> list[tuple[str, str]]:
         """
-        Process the plaer's guess and provide feedback.
-        
-        Args:
-            guess (str): The player's guess
-            
+        Process the player's guess and return feedback for each letter.
         Returns:
-            tuple containing:
-                bool: True if the guess is correct, False otherwise
-                list[tuple[str, str]]: List of (letter, status) pairs where status is:
-                    - 'correct' - right letter, right position
-                    - 'present' - right letter, wrong position
-                    - 'absent' - letter not in word
-                bool: Game over status
+            list[tuple[str, str]]: A list of (char, status) where status is:
+                'correct' - Letter is correct and in the correct position
+                'present' - Letter is in the word but in the wrong position
+                'absent' - Letter is not in the word
         """
-
-        # Check if the game is already over
-        if self.game_over:
-            return False, [], True
-        
-        # Validate the guess
-        valid = self.is_valid_guess(guess)
-        if not valid:
-            print(f"Debug - Validation failed for guess: '{guess}'")
-            return False, [], False
-        
-        # Convert guess to lowercase
         guess = guess.lower()
-        
-        self.attempts.append(guess) # Add the guess to the attempts list
-
-        # Process each letter in the guess
         result = []
-        for i, letter in enumerate(guess): # Iterate through each letter in the guess
+
+        for i, letter in enumerate(guess):
             if letter == self.word[i]:
-                result.append((letter, 'correct'))
+                result.append((letter.upper(), 'correct'))
             elif letter in self.word:
-                result.append((letter, 'present'))
+                result.append((letter.upper(), 'present'))
             else:
-                result.append((letter, 'absent'))
+                result.append((letter.upper(), 'absent'))
 
-        # Update game state
-        is_won = guess == self.word
-        is_lost = len(self.attempts) >= self.max_attempts
-        self.game_over = is_won or is_lost 
-
-        return True, result, self.game_over
+        self.attempts.append(guess)
+        return result
 
     def is_valid_guess(self, guess: str) -> bool:
         """
@@ -96,4 +70,19 @@ class WordleGame:
         print(result_string.strip())
         print(f"Attempts remaining: {self.max_attempts - len(self.attempts)}")
 
-    
+    def is_won(self) -> bool:
+        """
+        Check if the game is won.
+        Returns:
+            bool: True if the player has guessed the word correctly, False otherwise.
+        """
+        return self.word in self.attempts
+
+    def is_over(self) -> bool:
+        """
+        Check if the game is over (either won or max attempts reached).
+        Returns:
+            bool: True if the game is over, False otherwise.
+        """
+        return self.is_won() or len(self.attempts) >= self.max_attempts
+
