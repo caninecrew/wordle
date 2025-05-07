@@ -27,7 +27,9 @@ class WordleGame:
             return False, [], True
         
         # Validate the guess
-        if not self.is_valid_guess(guess):
+        valid = self.is_valid_guess(guess)
+        if not valid:
+            print(f"Debug - Validation failed for guess: '{guess}'")
             return False, [], False
         
         # Convert guess to lowercase
