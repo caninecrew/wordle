@@ -17,7 +17,7 @@ def play_game():
     print("A - Letter not in word")
 
     while not game.game_over:
-        guess = input("\nEnter your guess:").strip() # Get user input and strip whitespace
+        guess = input("\nEnter your guess: ").strip() # Get user input and strip whitespace
 
         is_valid, result, game_over = game.make_guess(guess) # Make a guess and get the result
 
