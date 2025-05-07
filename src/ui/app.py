@@ -43,6 +43,18 @@ class WordleGameUI(BoxLayout):
             Color(0.9, 0.9, 0.9, 1)
             Rectangle(pos=instance.pos, size=instance.size)
 
+    def _update_tile_background(self, tile, status):
+        """Update the background color of a tile based on its status."""
+        tile.canvas.before.clear()
+        with tile.canvas.before:
+            if status == "correct":
+                Color(0.2, 0.8, 0.2, 1)  # green
+            elif status == "present":
+                Color(1, 1, 0.4, 1)      # yellow
+            else:
+                Color(0.6, 0.6, 0.6, 1)  # gray
+            Rectangle(pos=tile.pos, size=tile.size)
+
     def submit_guess(self, instance):
         if self.guess_index >= NUM_ATTEMPTS:
             return
@@ -64,15 +76,7 @@ class WordleGameUI(BoxLayout):
         for col, (char, status) in enumerate(result):
             tile = self.tiles[self.guess_index][col]
             tile.text = char
-            with tile.canvas.before:
-                tile.canvas.before.clear()
-                if status == "correct":
-                    Color(0.2, 0.8, 0.2, 1)  # green
-                elif status == "present":
-                    Color(1, 1, 0.4, 1)      # yellow
-                else:
-                    Color(0.6, 0.6, 0.6, 1)  # gray
-                Rectangle(pos=tile.pos, size=tile.size)
+            self._update_tile_background(tile, status)
 
         self.guess_index += 1
 
@@ -80,6 +84,21 @@ class WordleGameUI(BoxLayout):
             self.show_popup("🎉 You Win!", f"You guessed it: {self.answer}")
         elif self.game.is_over():
             self.show_popup("Game Over", f"The word was: {self.answer}")
+
+    def on_size(self, *args):
+        """Ensure tile colors are preserved when the window is resized."""
+        for row in self.tiles:
+            for tile in row:
+                if tile.text:
+                    # Determine the status based on the tile's text
+                    if tile.text in self.answer:
+                        if self.answer.index(tile.text) == self.tiles.index(row):
+                            status = "correct"
+                        else:
+                            status = "present"
+                    else:
+                        status = "absent"
+                    self._update_tile_background(tile, status)
 
     def show_popup(self, title, message):
         popup = Popup(title=title,
