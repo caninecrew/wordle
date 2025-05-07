@@ -3,7 +3,10 @@ from kivy.uix.button import Button
 
 class OnScreenKeyboard(GridLayout):
     def __init__(self, **kwargs):
-        super().__init__(cols=10, spacing=5, size_hint=(1, 0.3), **kwargs)
+        super().__init__(**kwargs)
+        self.cols = 10
+        self.spacing = 5
+        self.size_hint_y = 0.3  # Use size_hint_y instead of size_hint to avoid conflicts
         self.keys = {}
         self.create_keys()
 

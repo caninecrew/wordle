@@ -4,7 +4,10 @@ from kivy.graphics import Color, Rectangle
 
 class Tile(Label):
     def __init__(self, **kwargs):
-        super().__init__(font_size=32, halign="center", valign="middle", **kwargs)
+        super().__init__(**kwargs)
+        self.font_size = 32
+        self.halign = "center"
+        self.valign = "middle"
         self.status = "default"  # Status can be 'default', 'correct', 'present', or 'absent'
         self.bind(size=self._update_background, pos=self._update_background)
 
