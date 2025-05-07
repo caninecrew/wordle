@@ -108,7 +108,7 @@ class WordleGameUI(BoxLayout):
             tile = self.tiles[self.guess_index][col]
             tile.text = char
             self._update_tile_background(tile, status)
-            self._animate_tile(tile)
+            self.keyboard.update_key_status(char, status)  # Update keyboard color
 
         self.guess_index += 1
 
