@@ -16,6 +16,14 @@ class WordleGameUI(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(orientation='vertical', padding=10, spacing=10, **kwargs)
 
+        # Header
+        header = BoxLayout(size_hint=(1, 0.1))
+        header.add_widget(Label(text="Wordle", font_size=32, bold=True))
+        new_game_button = Button(text="New Game", size_hint=(0.2, 1))
+        new_game_button.bind(on_press=lambda instance: self.reset_game())
+        header.add_widget(new_game_button)
+        self.add_widget(header)
+
         # Load word and game state
         self.word_list = WordList()
         self.answer = self.word_list.get_random_word().upper()
@@ -100,10 +108,23 @@ class WordleGameUI(BoxLayout):
                         status = "absent"
                     self._update_tile_background(tile, status)
 
+    def reset_game(self):
+        """Reset the game for a new round."""
+        self.answer = self.word_list.get_random_word().upper()
+        self.game = WordleGame(self.answer)
+        self.guess_index = 0
+
+        for row in self.tiles:
+            for tile in row:
+                tile.text = ""
+                self._update_tile_background(tile, "default")
+
     def show_popup(self, title, message):
-        popup = Popup(title=title,
-                      content=Label(text=message, font_size=20),
-                      size_hint=(0.7, 0.4))
+        popup = Popup(
+            title=title,
+            content=Label(text=message, halign="center"),
+            size_hint=(0.8, 0.4),
+        )
         popup.open()
 
 class WordleApp(App):
