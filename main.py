@@ -29,6 +29,11 @@ def play_game():
     while not game.game_over:
         guess = input("\nEnter your guess: ").strip() # Get user input and strip whitespace
 
+        if guess.lower() == 'exit':  # Check if the user wants to exit the game
+            print("Thanks for playing!")
+            print(f"The correct word was '{game.word}'.")
+            break
+
         is_valid, result, game_over = game.make_guess(guess) # Make a guess and get the result
 
         if not is_valid:
