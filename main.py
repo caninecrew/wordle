@@ -7,12 +7,8 @@ def find_word():
     Function to find a word from the word list.
     """
 
-    word_list = WordList()
-    with open("data/words.txt", "r") as file:
-        for line in file:
-            word_list.append(line.strip())
-
-    return random.choice(word_list)  # Randomly select a word from the list and return it
+    word_list = WordList() # Initialize the WordList class to access the word lists
+    return word_list.get_random_word()  # Get a random word from the list of answers
 
 def play_game():
     """
