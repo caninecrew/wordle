@@ -1,4 +1,5 @@
 from src.game import WordleGame
+from src.word_list import WordList
 import random
 
 def find_word():
@@ -6,7 +7,7 @@ def find_word():
     Function to find a word from the word list.
     """
 
-    word_list = []
+    word_list = WordList()
     with open("data/words.txt", "r") as file:
         for line in file:
             word_list.append(line.strip())
