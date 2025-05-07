@@ -79,7 +79,7 @@ class WordleGameUI(BoxLayout):
 
     def _animate_tile(self, tile):
         """Animate a tile to flip when revealing feedback."""
-        anim = Animation(scale=(1, 0), duration=0.2) + Animation(scale=(1, 1), duration=0.2)
+        anim = Animation(opacity=0, duration=0.2) + Animation(opacity=1, duration=0.2)
         anim.start(tile)
 
     def on_keyboard_input(self, letter):
