@@ -34,6 +34,10 @@ def play_game():
             print(f"The correct word was '{game.word}'.")
             break
 
+        if len(guess) != len(game.word):
+            print(f"Please enter a {len(game.word)}-letter word.")
+            continue
+
         is_valid, result, game_over = game.make_guess(guess) # Make a guess and get the result
 
         if not is_valid:
