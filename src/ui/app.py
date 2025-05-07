@@ -89,7 +89,7 @@ class WordleGameUI(BoxLayout):
         
         # Bind keyboard callbacks
         self.keyboard.bind(
-            on_key_press=self.on_key_press,
+            on_key_press=self.on_keyboard_input,
             on_enter=self.on_enter,
             on_backspace=self.on_backspace
         )
@@ -99,9 +99,8 @@ class WordleGameUI(BoxLayout):
         self.background.pos = instance.pos
         self.background.size = instance.size
     
-    def on_key_press(self, instance):
+    def on_keyboard_input(self, letter):
         """Handle letter key presses on the virtual keyboard"""
-        letter = instance.text
         if len(self.current_guess) < WORD_LENGTH and not self.game.is_over():
             # Add letter to current guess
             self.current_guess += letter
@@ -160,17 +159,24 @@ class WordleGameUI(BoxLayout):
         tile.animate_reveal()
     
     def show_invalid_word(self):
-        """Show animation for invalid word"""
-        row = self.tiles[self.guess_index]
+        """Show animation for invalid word by shaking the entire row as a unit"""
+        # Get the current row's starting position
+        row_index = self.guess_index
+        first_tile = self.tiles[row_index][0]
+        row_x = first_tile.x
         
-        # Create shake animation
-        shake_anim = Animation(x=self.grid.x + 10, duration=0.1)
-        shake_anim += Animation(x=self.grid.x - 10, duration=0.1)
-        shake_anim += Animation(x=self.grid.x, duration=0.1)
+        # Create a sequential shake animation for the entire row
+        anim = (
+            Animation(x=row_x - 10, duration=0.05) +
+            Animation(x=row_x + 10, duration=0.05) +
+            Animation(x=row_x - 6, duration=0.05) +
+            Animation(x=row_x + 6, duration=0.05) +
+            Animation(x=row_x, duration=0.05)
+        )
         
-        # Apply to each tile in the current row
-        for tile in row:
-            shake_anim.start(tile)
+        # Apply the same animation to all tiles in the row to keep them together
+        for tile in self.tiles[row_index]:
+            anim.start(tile)
     
     def check_game_status(self):
         """Check if game is won or lost"""
