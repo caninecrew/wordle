@@ -5,7 +5,7 @@ def play_game():
     """
     Main function to play the Wordle game.
     """
-    game = WordleGame("apple")  # Initialize the game with a word
+    game = WordleGame(find_word())  # Initialize the game with a word
 
     print("Welcome to Wordle!")
     print("You have 6 attempts to guess the word.")
