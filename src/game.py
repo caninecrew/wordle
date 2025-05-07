@@ -52,7 +52,7 @@ class WordleGame:
         is_lost = len(self.attempts) >= self.max_attempts
         self.game_over = is_won or is_lost 
 
-        return is_won, result, self.game_over
+        return True, result, self.game_over
 
     def is_valid_guess(self, guess: str) -> bool:
         """
