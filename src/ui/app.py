@@ -6,8 +6,10 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.popup import Popup
 from kivy.graphics import Color, Rectangle
+from kivy.animation import Animation
 from ..word_list import WordList
 from ..game import WordleGame
+from .keyboard import OnScreenKeyboard
 
 WORD_LENGTH = 5
 NUM_ATTEMPTS = 6
@@ -45,6 +47,18 @@ class WordleGameUI(BoxLayout):
         self.input.bind(on_text_validate=self.submit_guess)
         self.add_widget(self.input)
 
+        # Add on-screen keyboard
+        self.keyboard = OnScreenKeyboard()
+        self.keyboard.bind(on_key_press=self.on_keyboard_input)
+        self.add_widget(self.keyboard)
+
+        self.stats = {
+            'games_played': 0,
+            'games_won': 0,
+            'current_streak': 0,
+            'max_streak': 0
+        }
+
     def _update_background(self, instance, value):
         instance.canvas.before.clear()
         with instance.canvas.before:
@@ -62,6 +76,15 @@ class WordleGameUI(BoxLayout):
             else:
                 Color(0.6, 0.6, 0.6, 1)  # gray
             Rectangle(pos=tile.pos, size=tile.size)
+
+    def _animate_tile(self, tile):
+        """Animate a tile to flip when revealing feedback."""
+        anim = Animation(scale=(1, 0), duration=0.2) + Animation(scale=(1, 1), duration=0.2)
+        anim.start(tile)
+
+    def on_keyboard_input(self, letter):
+        if len(self.input.text) < WORD_LENGTH:
+            self.input.text += letter
 
     def submit_guess(self, instance):
         if self.guess_index >= NUM_ATTEMPTS:
@@ -85,12 +108,15 @@ class WordleGameUI(BoxLayout):
             tile = self.tiles[self.guess_index][col]
             tile.text = char
             self._update_tile_background(tile, status)
+            self._animate_tile(tile)
 
         self.guess_index += 1
 
         if self.game.is_won():
+            self.update_stats(won=True)
             self.show_popup("🎉 You Win!", f"You guessed it: {self.answer}")
         elif self.game.is_over():
+            self.update_stats(won=False)
             self.show_popup("Game Over", f"The word was: {self.answer}")
 
     def on_size(self, *args):
@@ -126,6 +152,22 @@ class WordleGameUI(BoxLayout):
             size_hint=(0.8, 0.4),
         )
         popup.open()
+
+    def update_stats(self, won):
+        self.stats['games_played'] += 1
+        if won:
+            self.stats['games_won'] += 1
+            self.stats['current_streak'] += 1
+            self.stats['max_streak'] = max(self.stats['max_streak'], self.stats['current_streak'])
+        else:
+            self.stats['current_streak'] = 0
+
+    def show_stats(self):
+        stats_message = (f"Games Played: {self.stats['games_played']}\n"
+                         f"Games Won: {self.stats['games_won']}\n"
+                         f"Current Streak: {self.stats['current_streak']}\n"
+                         f"Max Streak: {self.stats['max_streak']}")
+        self.show_popup("Statistics", stats_message)
 
 class WordleApp(App):
     def build(self):
