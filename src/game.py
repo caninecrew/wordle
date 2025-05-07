@@ -81,5 +81,26 @@ class WordleGame:
             return False
         
         return True # If all checks pass, return True
+    
+    def display_guess(self, guess_result: list[tuple[str, str]]) -> None:
+        """ 
+        Display the result of the guess in a formatted string.
+        
+        Args:
+            guess_result (list[tuple[str, str]]): List of (letter, status) pairs
+        
+        Returns:
+            str: Formatted string showing the guess result
+        """
+        
+        for letter, status in guess_result:
+            if status == 'correct':
+                print(f"[{letter.upper()}]", end=" ")
+            elif status == 'present':
+                print(f"({letter})", end=" ")
+            else:
+                print(f' {letter}', end=" ")
+
+        print() # Print a newline at the end of the guess result
 
     
