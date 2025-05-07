@@ -30,6 +30,10 @@ class WordList:
         """
         return random.choice(self.answers)
     
-    
+    def is_valid_word(self, word: str) -> bool:
+        """
+        Check if a word is valid (either an answer or an allowed guess).
+        """
+        return word.lower() in self.valid_words
 
         
