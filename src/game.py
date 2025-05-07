@@ -6,6 +6,11 @@ class WordleGame:
         self.attempts = [] # List to store the attempts made by the player
         self.max_attempts = 6 # Maximum number of attempts allowed
         self.game_over = False # Flag to indicate if the game is over
+        self.games_played = 0 # Number of games played
+        self.games_won = 0 # Number of games won
+        self.current_streak = 0 # Current winning streak
+        self.max_streak = 0 # Maximum winning streak
+        self.word_list = WordList() # Instance of WordList to access the word lists
 
     def make_guess(self, guess: str) -> str:
         """
