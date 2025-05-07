@@ -10,7 +10,8 @@ from kivy.animation import Animation
 from ..word_list import WordList
 from ..game import WordleGame
 from .keyboard import OnScreenKeyboard
-from kivy.uix.toolbar import Toolbar
+from kivy.uix.image import Image
+from .tile import Tile
 
 WORD_LENGTH = 5
 NUM_ATTEMPTS = 6
@@ -19,24 +20,13 @@ class WordleGameUI(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(orientation='vertical', padding=10, spacing=10, **kwargs)
 
-        # Title Bar
-        title_bar = BoxLayout(size_hint=(1, 0.1), orientation='horizontal', spacing=10)
-        title_bar.add_widget(Label(text="WORDLE", font_size=32, bold=True, halign="center"))
-
-        # Icons for settings, statistics, and help
-        settings_button = Button(text="⚙️", size_hint=(0.1, 1))
-        settings_button.bind(on_press=self.open_settings)
-        title_bar.add_widget(settings_button)
-
-        stats_button = Button(text="📊", size_hint=(0.1, 1))
-        stats_button.bind(on_press=self.show_stats)
-        title_bar.add_widget(stats_button)
-
-        help_button = Button(text="❓", size_hint=(0.1, 1))
-        help_button.bind(on_press=self.show_help)
-        title_bar.add_widget(help_button)
-
-        self.add_widget(title_bar)
+        # Header Bar
+        header_bar = BoxLayout(size_hint=(1, 0.1), orientation='horizontal', spacing=10, padding=[10, 10, 10, 10])
+        header_bar.add_widget(Button(text="❓", size_hint=(0.1, 1), on_press=self.show_help))
+        header_bar.add_widget(Label(text="WORDLE", font_size=32, bold=True, halign="center", size_hint=(0.8, 1)))
+        header_bar.add_widget(Button(text="📊", size_hint=(0.1, 1), on_press=self.show_stats))
+        header_bar.add_widget(Button(text="⚙️", size_hint=(0.1, 1), on_press=self.open_settings))
+        self.add_widget(header_bar)
 
         # Header
         header = BoxLayout(size_hint=(1, 0.1))
@@ -54,10 +44,9 @@ class WordleGameUI(BoxLayout):
 
         # Tile grid
         self.grid = GridLayout(cols=WORD_LENGTH, rows=NUM_ATTEMPTS, spacing=5, size_hint=(1, 0.9))
-        self.tiles = [[Label(text="", font_size=32, halign="center", valign="middle") for _ in range(WORD_LENGTH)] for _ in range(NUM_ATTEMPTS)]
+        self.tiles = [[Tile() for _ in range(WORD_LENGTH)] for _ in range(NUM_ATTEMPTS)]
         for row in self.tiles:
             for tile in row:
-                tile.bind(size=self._update_background)
                 self.grid.add_widget(tile)
 
         self.add_widget(self.grid)
@@ -127,8 +116,8 @@ class WordleGameUI(BoxLayout):
         for col, (char, status) in enumerate(result):
             tile = self.tiles[self.guess_index][col]
             tile.text = char
-            self._update_tile_background(tile, status)
-            self.keyboard.update_key_status(char, status)  # Update keyboard color
+            tile.set_status(status)
+            tile.animate_flip()
 
         self.guess_index += 1
 
@@ -182,7 +171,7 @@ class WordleGameUI(BoxLayout):
         else:
             self.stats['current_streak'] = 0
 
-    def show_stats(self):
+    def show_stats(self, instance=None):
         stats_message = (f"Games Played: {self.stats['games_played']}\n"
                          f"Games Won: {self.stats['games_won']}\n"
                          f"Current Streak: {self.stats['current_streak']}\n"
