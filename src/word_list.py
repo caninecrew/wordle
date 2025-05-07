@@ -24,5 +24,12 @@ class WordList:
         # Combine both lists for valid guesses
         self.valid_words = set(self.answers + self.allowed_guesses)
 
+    def get_random_word(self) -> str:
+        """
+        Get a random word from the list of answers.
+        """
+        return random.choice(self.answers)
+    
+    
 
         
