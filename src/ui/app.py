@@ -10,6 +10,7 @@ from kivy.animation import Animation
 from ..word_list import WordList
 from ..game import WordleGame
 from .keyboard import OnScreenKeyboard
+from kivy.uix.toolbar import Toolbar
 
 WORD_LENGTH = 5
 NUM_ATTEMPTS = 6
@@ -17,6 +18,25 @@ NUM_ATTEMPTS = 6
 class WordleGameUI(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(orientation='vertical', padding=10, spacing=10, **kwargs)
+
+        # Title Bar
+        title_bar = BoxLayout(size_hint=(1, 0.1), orientation='horizontal', spacing=10)
+        title_bar.add_widget(Label(text="WORDLE", font_size=32, bold=True, halign="center"))
+
+        # Icons for settings, statistics, and help
+        settings_button = Button(text="⚙️", size_hint=(0.1, 1))
+        settings_button.bind(on_press=self.open_settings)
+        title_bar.add_widget(settings_button)
+
+        stats_button = Button(text="📊", size_hint=(0.1, 1))
+        stats_button.bind(on_press=self.show_stats)
+        title_bar.add_widget(stats_button)
+
+        help_button = Button(text="❓", size_hint=(0.1, 1))
+        help_button.bind(on_press=self.show_help)
+        title_bar.add_widget(help_button)
+
+        self.add_widget(title_bar)
 
         # Header
         header = BoxLayout(size_hint=(1, 0.1))
@@ -168,6 +188,14 @@ class WordleGameUI(BoxLayout):
                          f"Current Streak: {self.stats['current_streak']}\n"
                          f"Max Streak: {self.stats['max_streak']}")
         self.show_popup("Statistics", stats_message)
+
+    def open_settings(self, instance):
+        """Open the settings menu."""
+        self.show_popup("Settings", "Settings menu coming soon!")
+
+    def show_help(self, instance):
+        """Open the help section."""
+        self.show_popup("Help", "Instructions and tips coming soon!")
 
 class WordleApp(App):
     def build(self):
