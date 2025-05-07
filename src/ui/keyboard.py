@@ -37,12 +37,12 @@ class KeyboardKey(Button):
     def _on_touch_down(self, instance, touch):
         if self.collide_point(*touch.pos):
             self.bg_color = tuple(c * 0.9 for c in self.bg_color[:3]) + (1,)  # Darken on press
-        return super(KeyboardKey, self)._on_touch_down(touch)
+        return super().on_touch_down(touch)
     
     def _on_touch_up(self, instance, touch):
         if self.collide_point(*touch.pos):
             self.bg_color = DEFAULT_KEY_COLOR
-        return super(KeyboardKey, self)._on_touch_up(touch)
+        return super().on_touch_up(touch)
     
     def set_status(self, status):
         if status == "correct":
@@ -111,6 +111,7 @@ class OnScreenKeyboard(BoxLayout):
         self.add_widget(bottom_row)
     
     def on_key_press(self, instance):
+        """Handle letter key presses and pass to parent"""
         if self.parent and hasattr(self.parent, 'on_keyboard_input'):
             self.parent.on_keyboard_input(instance.text)
     
