@@ -1,5 +1,6 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
@@ -7,22 +8,21 @@ from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.core.window import Window
+from kivy.metrics import dp
 
 from ..word_list import WordList
 from ..game import WordleGame
-from .keyboard import OnScreenKeyboard, DEFAULT_KEY_COLOR
-from .tile import Tile
+from .keyboard import OnScreenKeyboard, DEFAULT_KEY_COLOR, DARK_TEXT_COLOR
+from .tile import Tile, WHITE_COLOR, DEFAULT_COLOR
 from .themes import ThemeManager
 
 # Constants
 WORD_LENGTH = 5
 NUM_ATTEMPTS = 6
-WHITE_COLOR = (1, 1, 1, 1)
-DARK_TEXT_COLOR = (0.1, 0.1, 0.1, 1)
 
 class WordleGameUI(BoxLayout):
     def __init__(self, **kwargs):
-        super().__init__(orientation='vertical', padding=15, spacing=15, **kwargs)
+        super().__init__(orientation='vertical', **kwargs)
         
         # Set up white background for the entire app
         with self.canvas.before:
@@ -48,63 +48,103 @@ class WordleGameUI(BoxLayout):
             'max_streak': 0
         }
         
-        # Title Bar - Clean and minimal
-        self.title_bar = BoxLayout(size_hint=(1, 0.1), minimum_height=60)
-        title_label = Label(
-            text="WORDLE", 
-            font_size=38, 
+        # Create the layout structure
+        self._create_header()
+        self._create_game_grid()
+        self._create_keyboard()
+        
+        # Listen for window resize events to maintain proper sizing
+        Window.bind(on_resize=self._on_window_resize)
+    
+    def _create_header(self):
+        """Create the header with WORDLE title"""
+        # Header container with proper padding
+        header_container = BoxLayout(
+            size_hint=(1, None),
+            height=dp(60),
+            padding=[0, dp(10), 0, dp(10)]
+        )
+        
+        # Title label
+        title = Label(
+            text="WORDLE",
+            font_name="Roboto-Bold",
+            font_size=dp(36),
             bold=True,
             color=DARK_TEXT_COLOR,
-            halign='center'
+            size_hint=(1, 1),
+            halign='center',
+            valign='middle'
         )
-        self.title_bar.add_widget(title_label)
-        self.add_widget(self.title_bar)
+        # Ensure text is centered
+        title.bind(size=lambda *args: setattr(title, 'text_size', title.size))
         
-        # Main content area - centers the grid vertically and horizontally
-        content_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.6))
+        header_container.add_widget(title)
+        self.add_widget(header_container)
+    
+    def _create_game_grid(self):
+        """Create the main game grid with responsive centering"""
+        # Main content area takes all available space between header and keyboard
+        self.content_area = AnchorLayout(size_hint=(1, 0.7))
         
-        # Add top spacer to push grid downward for vertical centering
-        content_layout.add_widget(BoxLayout(size_hint=(1, 0.1)))
-        
-        # Grid container for horizontal centering
-        grid_container = BoxLayout(size_hint=(0.8, 0.8))
-        grid_container.add_widget(BoxLayout(size_hint=(0.1, 1)))  # Left spacer
-        
-        # Tile grid - 6 rows x 5 columns
-        self.grid = GridLayout(
+        # Create grid for tiles - 6 rows x 5 columns
+        self.grid_container = GridLayout(
             cols=WORD_LENGTH,
             rows=NUM_ATTEMPTS,
-            spacing=8,  # Consistent 8px spacing
-            size_hint=(0.8, 1),
-            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+            spacing=dp(5),
+            size_hint=(None, None),
+            padding=[dp(5), dp(5), dp(5), dp(5)]
         )
         
+        # Calculate initial tile sizes based on window width
+        tile_size = min(dp(62), (Window.width - dp(100)) / WORD_LENGTH)
+        grid_width = (tile_size * WORD_LENGTH) + ((WORD_LENGTH - 1) * dp(5))  # Include spacing
+        grid_height = (tile_size * NUM_ATTEMPTS) + ((NUM_ATTEMPTS - 1) * dp(5))
+        
+        self.grid_container.size = (grid_width, grid_height)
+        
         # Create tiles with the updated design
-        self.tiles = [[Tile() for _ in range(WORD_LENGTH)] for _ in range(NUM_ATTEMPTS)]
-        for row in self.tiles:
-            for tile in row:
-                self.grid.add_widget(tile)
+        self.tiles = []
+        for row in range(NUM_ATTEMPTS):
+            tile_row = []
+            for col in range(WORD_LENGTH):
+                tile = Tile(size=(tile_size, tile_size))
+                tile_row.append(tile)
+                self.grid_container.add_widget(tile)
+            self.tiles.append(tile_row)
         
-        grid_container.add_widget(self.grid)
-        grid_container.add_widget(BoxLayout(size_hint=(0.1, 1)))  # Right spacer
+        # Add the grid to the centered container
+        self.content_area.add_widget(self.grid_container)
+        self.add_widget(self.content_area)
+    
+    def _create_keyboard(self):
+        """Create the keyboard with proper sizing"""
+        self.keyboard_container = AnchorLayout(size_hint=(1, 0.3))
+        self.keyboard = OnScreenKeyboard(size_hint=(0.95, None))
+        self.keyboard_container.add_widget(self.keyboard)
+        self.add_widget(self.keyboard_container)
         
-        content_layout.add_widget(grid_container)
-        
-        # Add bottom spacer for vertical centering
-        content_layout.add_widget(BoxLayout(size_hint=(1, 0.1)))
-        
-        self.add_widget(content_layout)
-        
-        # Keyboard with design
-        self.keyboard = OnScreenKeyboard(size_hint=(1, 0.3))
-        self.add_widget(self.keyboard)
-        
-        # Bind keyboard callbacks
+        # Bind keyboard events
         self.keyboard.bind(
             on_key_press=self.on_keyboard_input,
             on_enter=self.on_enter,
             on_backspace=self.on_backspace
         )
+    
+    def _on_window_resize(self, instance, width, height):
+        """Handle window resize to maintain proper tile sizing"""
+        # Recalculate tile sizes based on new window width
+        tile_size = min(dp(62), (width - dp(100)) / WORD_LENGTH)
+        grid_width = (tile_size * WORD_LENGTH) + ((WORD_LENGTH - 1) * dp(5))
+        grid_height = (tile_size * NUM_ATTEMPTS) + ((NUM_ATTEMPTS - 1) * dp(5))
+        
+        # Update grid container size
+        self.grid_container.size = (grid_width, grid_height)
+        
+        # Update individual tile sizes
+        for row in self.tiles:
+            for tile in row:
+                tile.size = (tile_size, tile_size)
     
     def _update_background(self, instance, value):
         """Keep background updated when window size changes"""
@@ -119,15 +159,28 @@ class WordleGameUI(BoxLayout):
             # Update tile display
             tile = self.tiles[self.guess_index][len(self.current_guess) - 1]
             tile.text = letter
+            # Add subtle pop animation
+            self._animate_tile_input(tile)
+    
+    def _animate_tile_input(self, tile):
+        """Add a subtle pop animation when letter is entered"""
+        orig_size = tile.size[:]
+        anim = (
+            Animation(size=(orig_size[0] * 1.1, orig_size[1] * 1.1), duration=0.05) + 
+            Animation(size=orig_size, duration=0.05)
+        )
+        anim.start(tile)
     
     def on_backspace(self, instance=None):
         """Handle backspace key press"""
         if self.current_guess and not self.game.is_over():
-            # Remove last letter
+            # Get tile reference before removing the letter
+            tile = self.tiles[self.guess_index][len(self.current_guess) - 1]
+            # Remove last letter and clear tile
             self.current_guess = self.current_guess[:-1]
-            # Clear tile display
-            tile = self.tiles[self.guess_index][len(self.current_guess)]
             tile.text = ""
+            # Update the tile canvas
+            tile.set_status("default")
     
     def on_enter(self, instance=None):
         """Submit current guess"""
@@ -168,27 +221,28 @@ class WordleGameUI(BoxLayout):
     def reveal_tile(self, tile, status):
         """Reveal a single tile with animation"""
         tile.set_status(status)
-        tile.animate_reveal()
+        tile.animate_flip()
     
     def show_invalid_word(self):
         """Show animation for invalid word with proper shake and error message"""
         row_tiles = self.tiles[self.guess_index]
-        start_pos = self.grid.pos
+        start_pos = self.grid_container.pos
         
         # Create a short toast message that appears and fades out
         toast = Label(
             text="Not in word list",
-            font_size=16,
-            color=(0, 0, 0, 1),
+            font_name="Roboto",
+            font_size=dp(16),
+            color=DARK_TEXT_COLOR,
             size_hint=(None, None),
-            size=(200, 40),
-            pos_hint={'center_x': 0.5},
+            size=(dp(200), dp(40)),
             opacity=0
         )
         
         # Add toast to the layout temporarily
         self.add_widget(toast)
-        toast.pos = (self.width/2 - toast.width/2, self.grid.y - 40)
+        toast.pos = (self.width/2 - toast.width/2, 
+                     self.grid_container.y - dp(40))
         
         # Fade in the toast
         anim_in = Animation(opacity=1, duration=0.2)
@@ -204,20 +258,21 @@ class WordleGameUI(BoxLayout):
         
         # Shake animation for the grid
         shake_anim = (
-            Animation(pos=(start_pos[0] - 10, start_pos[1]), duration=0.1) + 
-            Animation(pos=(start_pos[0] + 10, start_pos[1]), duration=0.1) + 
-            Animation(pos=(start_pos[0] - 5, start_pos[1]), duration=0.1) + 
-            Animation(pos=(start_pos[0] + 5, start_pos[1]), duration=0.1) + 
+            Animation(pos=(start_pos[0] - dp(10), start_pos[1]), duration=0.1) + 
+            Animation(pos=(start_pos[0] + dp(10), start_pos[1]), duration=0.1) + 
+            Animation(pos=(start_pos[0] - dp(5), start_pos[1]), duration=0.1) + 
+            Animation(pos=(start_pos[0] + dp(5), start_pos[1]), duration=0.1) + 
             Animation(pos=start_pos, duration=0.1)
         )
         
-        shake_anim.start(self.grid)
+        shake_anim.start(self.grid_container)
         
         # After shake completes, clear the current guess
         def clear_guess(dt):
             for i in range(len(self.current_guess)):
                 tile = row_tiles[i]
                 tile.text = ""
+                tile.set_status("default")
             self.current_guess = ""
         
         Clock.schedule_once(clear_guess, 1.5)
