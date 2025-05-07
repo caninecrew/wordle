@@ -127,6 +127,9 @@ class WordleGameUI(BoxLayout):
             tile.set_status(status)
             tile.animate_flip()
 
+            # Update keyboard key color
+            self.keyboard.update_key_status(char, status)
+
         self.guess_index += 1
 
         if self.game.is_won():
