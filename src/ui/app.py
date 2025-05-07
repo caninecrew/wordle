@@ -25,10 +25,10 @@ class WordleGameUI(BoxLayout):
 
         # Header Bar
         header_bar = BoxLayout(size_hint=(1, 0.1), orientation='horizontal', spacing=10, padding=[10, 10, 10, 10])
-        header_bar.add_widget(Button(text="❓", size_hint=(0.1, 1), on_press=self.show_help))
-        header_bar.add_widget(Label(text="WORDLE", font_size=32, bold=True, halign="center", size_hint=(0.8, 1)))
-        header_bar.add_widget(Button(text="📊", size_hint=(0.1, 1), on_press=self.show_stats))
-        header_bar.add_widget(Button(text="⚙️", size_hint=(0.1, 1), on_press=self.open_settings))
+        header_bar.add_widget(Button(text="❓", size_hint=(0.1, 1), on_press=self.show_help, background_color=(0.9, 0.9, 0.9, 1)))
+        header_bar.add_widget(Label(text="WORDLE", font_size=40, bold=True, halign="center", size_hint=(0.8, 1), color=(0, 0, 0, 1)))
+        header_bar.add_widget(Button(text="📊", size_hint=(0.1, 1), on_press=self.show_stats, background_color=(0.9, 0.9, 0.9, 1)))
+        header_bar.add_widget(Button(text="⚙️", size_hint=(0.1, 1), on_press=self.open_settings, background_color=(0.9, 0.9, 0.9, 1)))
         self.add_widget(header_bar)
 
         # Header
@@ -46,8 +46,8 @@ class WordleGameUI(BoxLayout):
         self.guess_index = 0
 
         # Tile grid
-        self.grid = GridLayout(cols=WORD_LENGTH, rows=NUM_ATTEMPTS, spacing=5, size_hint=(1, 0.9))
-        self.tiles = [[Tile() for _ in range(WORD_LENGTH)] for _ in range(NUM_ATTEMPTS)]
+        self.grid = GridLayout(cols=WORD_LENGTH, rows=NUM_ATTEMPTS, spacing=5, size_hint=(1, 0.8), padding=[20, 20, 20, 20])
+        self.tiles = [[Tile(font_size=36, bold=True) for _ in range(WORD_LENGTH)] for _ in range(NUM_ATTEMPTS)]
         for row in self.tiles:
             for tile in row:
                 self.grid.add_widget(tile)
@@ -60,7 +60,7 @@ class WordleGameUI(BoxLayout):
         self.add_widget(self.input)
 
         # Add on-screen keyboard
-        self.keyboard = OnScreenKeyboard()
+        self.keyboard = OnScreenKeyboard(size_hint=(1, 0.2))
         self.keyboard.bind(on_key_press=self.on_keyboard_input)
         self.add_widget(self.keyboard)
 
@@ -74,7 +74,7 @@ class WordleGameUI(BoxLayout):
     def _update_background(self, instance, value):
         instance.canvas.before.clear()
         with instance.canvas.before:
-            Color(0.9, 0.9, 0.9, 1)
+            Color(1, 1, 1, 1)  # White background for light mode
             Rectangle(pos=instance.pos, size=instance.size)
 
     def _update_tile_background(self, tile, status):
