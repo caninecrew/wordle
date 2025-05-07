@@ -68,12 +68,7 @@ class WordleGame:
         Returns:
             bool: True if the guess is valid, False otherwise
         """
-
-        # Debug prints
-        print(f"Debug - Guess: '{guess}'")
-        print(f"Debug - Guess length: {len(guess)}, Word length: {len(self.word)}")
-        print(f"Debug - Is alpha: {guess.isalpha()}")
-
+        
         # Check if guess is empty or None
         if not guess:
             print("Debug - Guess is empty")
