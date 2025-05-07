@@ -13,35 +13,44 @@ class WordleGame:
             guess (str): The player's guess
             
         Returns:
-            str: Feedback on the guess (correct, incorrect, or game over)
+            tuple containing:
+                bool: True if the guess is correct, False otherwise
+                list[tuple[str, str]]: List of (letter, status) pairs where status is:
+                    - 'correct' - right letter, right position
+                    - 'present' - right letter, wrong position
+                    - 'absent' - letter not in word
+                bool: Game over status
         """
 
         # Check if the game is already over
         if self.game_over:
-            return "Game is already over. Please start a new game."
+            return False, [], True
         
         # Validate the guess
         if not self.is_valid_guess(guess):
-            return "Invalid guess. Please try again."
+            return False, [], False
         
         # Convert guess to lowercase
         guess = guess.lower()
+        
+        self.attempts.append(guess) # Add the guess to the attempts list
 
-        # Add the guess to the attempts list
-        self.attempts.append(guess)
+        # Process each letter in the guess
+        result = []
+        for i, letter in enumerate(guess): # Iterate through each letter in the guess
+            if letter == self.word[i]:
+                result.append((letter, 'correct'))
+            elif letter in self.word:
+                result.append((letter, 'present'))
+            else:
+                result.append((letter, 'absent'))
 
-        # Check if the guess is correct
-        if guess == self.word:
-            self.game_over = True
-            return "Congratulations! You've guessed the word correctly."
+        # Update game state
+        is_won = guess == self.word
+        is_lost = len(self.attempts) >= self.max_attempts
+        self.game_over = is_won or is_lost 
 
-        # Check if maximum attempts have been reached
-        if len(self.attempts) >= self.max_attempts:
-            self.game_over = True
-            return f"Game over! The correct word was '{self.word}'."
-
-        return "Incorrect guess. Try again."
-
+        return is_won, result, self.game_over
 
     def is_valid_guess(self, guess: str) -> bool:
         """
