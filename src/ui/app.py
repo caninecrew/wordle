@@ -12,6 +12,7 @@ from ..game import WordleGame
 from .keyboard import OnScreenKeyboard
 from kivy.uix.image import Image
 from .tile import Tile
+from .themes import ThemeManager
 
 WORD_LENGTH = 5
 NUM_ATTEMPTS = 6
@@ -19,6 +20,8 @@ NUM_ATTEMPTS = 6
 class WordleGameUI(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(orientation='vertical', padding=10, spacing=10, **kwargs)
+
+        self.theme_manager = ThemeManager()
 
         # Header Bar
         header_bar = BoxLayout(size_hint=(1, 0.1), orientation='horizontal', spacing=10, padding=[10, 10, 10, 10])
@@ -185,7 +188,39 @@ class WordleGameUI(BoxLayout):
 
     def open_settings(self, instance):
         """Open the settings menu."""
-        self.show_popup("Settings", "Settings menu coming soon!")
+        content = BoxLayout(orientation='vertical', spacing=10, padding=10)
+
+        dark_mode_button = Button(text="Toggle Dark Mode")
+        dark_mode_button.bind(on_press=lambda x: self.toggle_dark_mode())
+        content.add_widget(dark_mode_button)
+
+        colorblind_mode_button = Button(text="Toggle Colorblind Mode")
+        colorblind_mode_button.bind(on_press=lambda x: self.toggle_colorblind_mode())
+        content.add_widget(colorblind_mode_button)
+
+        popup = Popup(title="Settings", content=content, size_hint=(0.8, 0.4))
+        popup.open()
+
+    def toggle_dark_mode(self):
+        self.theme_manager.toggle_dark_mode()
+        # Apply dark mode changes (e.g., background color)
+        if self.theme_manager.dark_mode:
+            self.canvas.before.clear()
+            with self.canvas.before:
+                Color(0.07, 0.07, 0.07, 1)  # dark background
+                Rectangle(pos=self.pos, size=self.size)
+        else:
+            self.canvas.before.clear()
+            with self.canvas.before:
+                Color(1, 1, 1, 1)  # light background
+                Rectangle(pos=self.pos, size=self.size)
+
+    def toggle_colorblind_mode(self):
+        self.theme_manager.toggle_colorblind_mode()
+        # Update tile colors based on the new mode
+        for row in self.tiles:
+            for tile in row:
+                tile.set_status(tile.status)
 
     def show_help(self, instance):
         """Open the help section."""
