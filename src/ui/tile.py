@@ -57,10 +57,10 @@ class Tile(Label):
         
     def animate_reveal(self):
         """Animate the tile flipping when revealing feedback."""
-        # Scale down to 0 height first (flip down)
-        anim1 = Animation(opacity=0, scale_y=0.1, duration=0.15)
-        # Then scale back up with the new color (flip up)
-        anim2 = Animation(opacity=1, scale_y=1, duration=0.15)
+        # First fade out
+        anim1 = Animation(opacity=0, duration=0.15)
+        # Then fade back in
+        anim2 = Animation(opacity=1, duration=0.15)
         
         # Chain animations
         anim = anim1 + anim2
