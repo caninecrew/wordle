@@ -95,6 +95,11 @@ class WordleGameUI(BoxLayout):
         if len(self.input.text) < WORD_LENGTH:
             self.input.text += letter
 
+    def on_backspace(self):
+        """Handle the BACKSPACE key to delete the last letter in the current guess."""
+        if self.input.text:
+            self.input.text = self.input.text[:-1]
+
     def submit_guess(self, instance):
         if self.guess_index >= NUM_ATTEMPTS:
             return

@@ -3,20 +3,42 @@ from kivy.uix.button import Button
 
 class OnScreenKeyboard(GridLayout):
     def __init__(self, **kwargs):
-        super().__init__(cols=10, spacing=5, size_hint=(1, 0.2), **kwargs)
+        super().__init__(cols=10, spacing=5, size_hint=(1, 0.3), **kwargs)
         self.keys = {}
         self.create_keys()
 
     def create_keys(self):
-        for letter in "QWERTYUIOPASDFGHJKLZXCVBNM":
-            button = Button(text=letter, font_size=18)
-            button.bind(on_press=self.on_key_press)
-            self.keys[letter] = button
-            self.add_widget(button)
+        # Top row
+        for letter in "QWERTYUIOP":
+            self.add_key(letter)
+
+        # Middle row
+        for letter in "ASDFGHJKL":
+            self.add_key(letter)
+
+        # Bottom row
+        self.add_widget(Button(text="ENTER", font_size=18, on_press=self.on_enter))
+        for letter in "ZXCVBNM":
+            self.add_key(letter)
+        self.add_widget(Button(text="←", font_size=18, on_press=self.on_backspace))
+
+    def add_key(self, letter):
+        button = Button(text=letter, font_size=18)
+        button.bind(on_press=self.on_key_press)
+        self.keys[letter] = button
+        self.add_widget(button)
 
     def on_key_press(self, instance):
         if self.parent and hasattr(self.parent, 'on_keyboard_input'):
             self.parent.on_keyboard_input(instance.text)
+
+    def on_enter(self, instance):
+        if self.parent and hasattr(self.parent, 'submit_guess'):
+            self.parent.submit_guess(instance)
+
+    def on_backspace(self, instance):
+        if self.parent and hasattr(self.parent, 'on_backspace'):
+            self.parent.on_backspace()
 
     def update_key_status(self, letter, status):
         if letter in self.keys:

@@ -28,5 +28,5 @@ class Tile(Label):
 
     def animate_flip(self):
         """Animate the tile to flip when revealing feedback."""
-        anim = Animation(scale_y=0, duration=0.2) + Animation(scale_y=1, duration=0.2)
+        anim = Animation(opacity=0, duration=0.2) + Animation(opacity=1, duration=0.2)
         anim.start(self)
