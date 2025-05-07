@@ -42,9 +42,12 @@ class OnScreenKeyboard(GridLayout):
 
     def update_key_status(self, letter, status):
         if letter in self.keys:
+            button = self.keys[letter]
             if status == "correct":
-                self.keys[letter].background_color = (0.2, 0.8, 0.2, 1)  # green
+                button.background_color = (0.2, 0.8, 0.2, 1)  # green
             elif status == "present":
-                self.keys[letter].background_color = (1, 1, 0.4, 1)  # yellow
+                button.background_color = (1, 1, 0.4, 1)  # yellow
+            elif status == "absent":
+                button.background_color = (0.6, 0.6, 0.6, 1)  # gray
             else:
-                self.keys[letter].background_color = (0.6, 0.6, 0.6, 1)  # gray
+                button.background_color = (0.9, 0.9, 0.9, 1)  # default (light gray)
