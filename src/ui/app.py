@@ -15,6 +15,7 @@ import os
 from ..word_list import WordList
 from ..game import WordleGame
 from .themes import ThemeManager
+from .tile import Tile
 
 from kivy.factory import Factory
 from kivy.uix.button import Button
@@ -109,13 +110,12 @@ class WordleGameUI(BoxLayout):
                 print(f"Error loading statistics: {e}")
     
     def setup_tiles(self):
-        """Set up tile grid from kv file"""
+        """Set up tile grid programmatically"""
         self.tiles = []
-        tile_grid = self.ids.tile_grid
-        
-        # Clear any existing widgets
-        tile_grid.clear_widgets()
-        
+
+        # Clear any existing widgets in the tile grid
+        self.tile_grid.clear_widgets()
+
         # Create tiles
         for row in range(NUM_ATTEMPTS):
             tile_row = []
@@ -133,46 +133,57 @@ class WordleGameUI(BoxLayout):
                 )
                 # Set tile status attribute
                 tile.status = "default"
-                
+
                 # Explicitly set up the canvas to ensure visibility
                 with tile.canvas.before:
                     Color(0.12, 0.12, 0.12, 1)  # Dark gray background
                     Rectangle(pos=tile.pos, size=tile.size)
                     Color(0.3, 0.3, 0.3, 1)  # Border color
                     Line(rectangle=(tile.x, tile.y, tile.width, tile.height), width=2)
-                
+
                 tile_row.append(tile)
-                tile_grid.add_widget(tile)
+                self.tile_grid.add_widget(tile)
                 print(f"Added tile at row {row}, col {col}")  # Debugging log
             self.tiles.append(tile_row)
-        
+
         # Force layout update
-        tile_grid.do_layout()
+        self.tile_grid.do_layout()
     
     def setup_keyboard(self):
-        """Set up keyboard bindings for the keys defined in kv file"""
+        """Set up keyboard programmatically"""
         self.keys = {}
-        keyboard = self.ids.keyboard
 
-        # Loop through all children of the keyboard to find keys
-        for row in keyboard.children:
-            if isinstance(row, BoxLayout):
-                for child in row.children:
-                    if getattr(child, 'key_id', '').startswith('key_'):
-                        letter = child.text
-                        self.keys[letter] = child
+        # Initialize the keyboard layout
+        self.keyboard = BoxLayout(orientation='vertical', spacing=dp(5), size_hint=(None, None))
+        self.keyboard.size = (dp(325), dp(150))
+        self.keyboard.pos_hint = {'center_x': 0.5, 'y': 0.1}
+        self.add_widget(self.keyboard)
 
-                        # Bind key events - fixing lambda closure issue
-                        if letter == 'ENTER':
-                            child.bind(on_press=self.on_enter)
-                        elif letter == '⌫' or child.key_id == 'key_BACK':
-                            child.bind(on_press=self.on_backspace)
-                        else:
-                            # Use a function factory to create proper closures
-                            def create_key_callback(key_text):
-                                return lambda instance: self.on_keyboard_input(key_text)
-                            child.bind(on_press=create_key_callback(letter))
-                            print(f"Bound key {letter} to on_keyboard_input")  # Debugging log
+        # Define keyboard rows
+        rows = [
+            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+            ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
+        ]
+
+        # Create keys for each row
+        for row in rows:
+            row_layout = BoxLayout(spacing=dp(5), size_hint_y=None, height=dp(50))
+            for key_text in row:
+                key = KeyButton(text=key_text, size_hint=(None, None), size=(dp(30), dp(50)))
+                key.key_id = f'key_{key_text}'
+                self.keys[key_text] = key
+
+                # Bind key events
+                if key_text == 'ENTER':
+                    key.bind(on_press=self.on_enter)
+                elif key_text == '⌫':
+                    key.bind(on_press=self.on_backspace)
+                else:
+                    key.bind(on_press=lambda instance, text=key_text: self.on_keyboard_input(text))
+
+                row_layout.add_widget(key)
+            self.keyboard.add_widget(row_layout)
     
     def _on_window_resize(self, instance, width, height):
         """Handle window resize to maintain proper proportions"""
@@ -294,7 +305,7 @@ class WordleGameUI(BoxLayout):
     def show_invalid_word(self):
         """Show animation for invalid word with proper shake and error message"""
         row_tiles = self.tiles[self.guess_index]
-        tile_grid = self.ids.tile_grid
+        tile_grid = self.tile_grid
         start_pos = tile_grid.pos
         
         # Create a short toast message that appears and fades out
@@ -448,9 +459,9 @@ class WordleGameUI(BoxLayout):
 class WordleApp(App):
     def build(self):
         try:
-            # Removed reference to 'wordle.kv' as its contents have been integrated into Python files
-            # Builder.load_file("wordle.kv")
-            
+            # Load the KV file for the layout
+            Builder.load_file("wordle.kv")
+
             # Set window title
             self.title = 'Wordle'
             # White background for the app window
@@ -459,6 +470,15 @@ class WordleApp(App):
         except Exception as e:
             print(f"Error during app build: {e}")
             raise
+
+    def on_start(self):
+        # Populate the tile grid with 30 tile widgets only if it is empty
+        tile_grid = self.root.tile_grid
+        if not tile_grid.children:
+            for row in range(6):
+                for col in range(5):
+                    tile = Tile()
+                    tile_grid.add_widget(tile)
 
 from flask import Flask
 
