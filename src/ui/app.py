@@ -433,12 +433,20 @@ class WordleApp(App):
         try:
             # Load the KV file for the layout
             Builder.load_file("wordle.kv")
-
-            # Set window title
+            
+            # Set window title and background
             self.title = 'Wordle'
-            # White background for the app window
             Window.clearcolor = (1, 1, 1, 1)
-            return WordleGameUI()
+            
+            # Create and return the main UI
+            game_ui = WordleGameUI()
+            
+            # Force an initial layout calculation
+            def init_layout(dt):
+                game_ui.do_layout()
+            Clock.schedule_once(init_layout, 0)
+            
+            return game_ui
         except Exception as e:
             print(f"Error during app build: {e}")
             raise
