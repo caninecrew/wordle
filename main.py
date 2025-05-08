@@ -6,6 +6,8 @@ Config.set('graphics', 'resizable', True)
 
 from src.ui.app import WordleApp
 
+# Removed redundant mobile_main.py functionality and consolidated into main.py
+
 if __name__ == '__main__':
     WordleApp().run()
 
