@@ -1,44 +1,55 @@
 from kivy.app import App
+from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
-from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
-from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.metrics import dp
+from kivy.properties import ObjectProperty, ListProperty, BooleanProperty, StringProperty
+from kivy.graphics import Color, Rectangle, Line
+import json
+import os
 
 from ..word_list import WordList
 from ..game import WordleGame
-from .keyboard import OnScreenKeyboard, DEFAULT_KEY_COLOR, DARK_TEXT_COLOR
-from .tile import Tile, WHITE_COLOR, DEFAULT_COLOR
 from .themes import ThemeManager
+
+from kivy.factory import Factory
+from kivy.uix.button import Button
+
+# Register the Tile template explicitly
+Factory.register('Tile', cls=Label)
+
+# Debugging: Print registered templates
+print("Templates loaded:", Builder.templates.keys())
 
 # Constants
 WORD_LENGTH = 5
 NUM_ATTEMPTS = 6
 
+# Color constants
+CORRECT_COLOR = (0.416, 0.667, 0.392, 1)  # #6aaa64 (green)
+PRESENT_COLOR = (0.788, 0.706, 0.345, 1)  # #c9b458 (yellow)
+ABSENT_COLOR = (0.471, 0.486, 0.494, 1)   # #787c7e (gray)
+DEFAULT_COLOR = (0.071, 0.071, 0.075, 1)  # #121213 (dark gray/black)
+WHITE_COLOR = (1, 1, 1, 1)                # #ffffff (white)
+DARK_TEXT_COLOR = (0.1, 0.1, 0.1, 1)      # #1a1a1a (near black)
+DEFAULT_KEY_COLOR = (0.82, 0.84, 0.85, 1) # #d3d6da (light gray)
+
+class KeyButton(Button):
+    key_id = StringProperty('')
+
 class WordleGameUI(BoxLayout):
+    tile_grid = ObjectProperty(None)
+    keyboard = ObjectProperty(None)
+    
     def __init__(self, **kwargs):
-        super().__init__(orientation='vertical', **kwargs)
-        
-        # Set up white background for the entire app
-        with self.canvas.before:
-            Color(*WHITE_COLOR)
-            self.background = Rectangle(pos=self.pos, size=self.size)
-        self.bind(pos=self._update_background, size=self._update_background)
-        
+        super().__init__(**kwargs)
+
         # Theme manager for color blind mode
         self.theme_manager = ThemeManager()
-        
-        # Game state initialization
-        self.word_list = WordList()
-        self.answer = self.word_list.get_random_word().upper()
-        self.game = WordleGame(self.answer)
-        self.guess_index = 0
-        self.current_guess = ""
         
         # Statistics tracking
         self.stats = {
@@ -48,111 +59,132 @@ class WordleGameUI(BoxLayout):
             'max_streak': 0
         }
         
-        # Create the layout structure
-        self._create_header()
-        self._create_game_grid()
-        self._create_keyboard()
+        # Load saved statistics
+        self.load_statistics()
         
-        # Listen for window resize events to maintain proper sizing
+        # Game state initialization
+        self.word_list = WordList()
+        self.answer = self.word_list.get_random_word().upper()
+        self.game = WordleGame(self.answer)
+        self.guess_index = 0
+        self.current_guess = ""
+        
+        # Setup tiles and keyboard
+        self.setup_tiles()
+        self.setup_keyboard()
+        
+        # Window resize callback
         Window.bind(on_resize=self._on_window_resize)
     
-    def _create_header(self):
-        """Create the header with WORDLE title"""
-        # Header container with proper padding
-        header_container = BoxLayout(
-            size_hint=(1, None),
-            height=dp(60),
-            padding=[0, dp(10), 0, dp(10)]
-        )
+    def save_statistics(self):
+        """Save game statistics to file"""
+        stats_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data')
+        os.makedirs(stats_dir, exist_ok=True)
+        stats_path = os.path.join(stats_dir, 'statistics.json')
         
-        # Title label
-        title = Label(
-            text="WORDLE",
-            font_name="Roboto-Bold",
-            font_size=dp(36),
-            bold=True,
-            color=DARK_TEXT_COLOR,
-            size_hint=(1, 1),
-            halign='center',
-            valign='middle'
-        )
-        # Ensure text is centered
-        title.bind(size=lambda *args: setattr(title, 'text_size', title.size))
-        
-        header_container.add_widget(title)
-        self.add_widget(header_container)
+        try:
+            with open(stats_path, 'w') as f:
+                json.dump(self.stats, f)
+        except Exception as e:
+            print(f"Error saving statistics: {e}")
     
-    def _create_game_grid(self):
-        """Create the main game grid with responsive centering"""
-        # Main content area takes all available space between header and keyboard
-        self.content_area = AnchorLayout(size_hint=(1, 0.7))
+    def load_statistics(self):
+        """Load game statistics from file if available"""
+        stats_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data')
+        stats_path = os.path.join(stats_dir, 'statistics.json')
         
-        # Create grid for tiles - 6 rows x 5 columns
-        self.grid_container = GridLayout(
-            cols=WORD_LENGTH,
-            rows=NUM_ATTEMPTS,
-            spacing=dp(5),
-            size_hint=(None, None),
-            padding=[dp(5), dp(5), dp(5), dp(5)]
-        )
-        
-        # Calculate initial tile sizes based on window width
-        tile_size = min(dp(62), (Window.width - dp(100)) / WORD_LENGTH)
-        grid_width = (tile_size * WORD_LENGTH) + ((WORD_LENGTH - 1) * dp(5))  # Include spacing
-        grid_height = (tile_size * NUM_ATTEMPTS) + ((NUM_ATTEMPTS - 1) * dp(5))
-        
-        self.grid_container.size = (grid_width, grid_height)
-        
-        # Create tiles with the updated design
+        if os.path.exists(stats_path):
+            try:
+                with open(stats_path, 'r') as f:
+                    loaded_stats = json.load(f)
+                    self.stats.update(loaded_stats)
+            except Exception as e:
+                print(f"Error loading statistics: {e}")
+    
+    def setup_tiles(self):
+        """Set up tile grid from kv file"""
         self.tiles = []
+        tile_grid = self.ids.tile_grid
+        
+        # Clear any existing widgets
+        tile_grid.clear_widgets()
+        
+        # Create tiles
         for row in range(NUM_ATTEMPTS):
             tile_row = []
             for col in range(WORD_LENGTH):
-                tile = Tile(size=(tile_size, tile_size))
+                # Create a visible tile with proper styling
+                tile = Label(
+                    size_hint=(None, None),
+                    size=(dp(56), dp(56)),
+                    font_size=dp(32),
+                    bold=True,
+                    halign='center',
+                    valign='middle',
+                    text='',
+                    color=(1, 1, 1, 1)  # White text color
+                )
+                # Set tile status attribute
+                tile.status = "default"
+                
+                # Explicitly set up the canvas to ensure visibility
+                with tile.canvas.before:
+                    Color(0.12, 0.12, 0.12, 1)  # Dark gray background
+                    Rectangle(pos=tile.pos, size=tile.size)
+                    Color(0.3, 0.3, 0.3, 1)  # Border color
+                    Line(rectangle=(tile.x, tile.y, tile.width, tile.height), width=2)
+                
                 tile_row.append(tile)
-                self.grid_container.add_widget(tile)
+                tile_grid.add_widget(tile)
+                print(f"Added tile at row {row}, col {col}")  # Debugging log
             self.tiles.append(tile_row)
         
-        # Add the grid to the centered container
-        self.content_area.add_widget(self.grid_container)
-        self.add_widget(self.content_area)
+        # Force layout update
+        tile_grid.do_layout()
     
-    def _create_keyboard(self):
-        """Create the keyboard with proper sizing"""
-        self.keyboard_container = AnchorLayout(size_hint=(1, 0.3))
-        self.keyboard = OnScreenKeyboard(size_hint=(0.95, None))
-        self.keyboard_container.add_widget(self.keyboard)
-        self.add_widget(self.keyboard_container)
-        
-        # Bind keyboard events
-        self.keyboard.bind(
-            on_key_press=self.on_keyboard_input,
-            on_enter=self.on_enter,
-            on_backspace=self.on_backspace
-        )
+    def setup_keyboard(self):
+        """Set up keyboard bindings for the keys defined in kv file"""
+        self.keys = {}
+        keyboard = self.ids.keyboard
+
+        # Loop through all children of the keyboard to find keys
+        for row in keyboard.children:
+            if isinstance(row, BoxLayout):
+                for child in row.children:
+                    if getattr(child, 'key_id', '').startswith('key_'):
+                        letter = child.text
+                        self.keys[letter] = child
+
+                        # Bind key events - fixing lambda closure issue
+                        if letter == 'ENTER':
+                            child.bind(on_press=self.on_enter)
+                        elif letter == '⌫' or child.key_id == 'key_BACK':
+                            child.bind(on_press=self.on_backspace)
+                        else:
+                            # Use a function factory to create proper closures
+                            def create_key_callback(key_text):
+                                return lambda instance: self.on_keyboard_input(key_text)
+                            child.bind(on_press=create_key_callback(letter))
+                            print(f"Bound key {letter} to on_keyboard_input")  # Debugging log
     
     def _on_window_resize(self, instance, width, height):
-        """Handle window resize to maintain proper tile sizing"""
+        """Handle window resize to maintain proper proportions"""
         # Recalculate tile sizes based on new window width
+        tile_grid = self.ids.tile_grid
         tile_size = min(dp(62), (width - dp(100)) / WORD_LENGTH)
         grid_width = (tile_size * WORD_LENGTH) + ((WORD_LENGTH - 1) * dp(5))
         grid_height = (tile_size * NUM_ATTEMPTS) + ((NUM_ATTEMPTS - 1) * dp(5))
         
         # Update grid container size
-        self.grid_container.size = (grid_width, grid_height)
+        tile_grid.size = (grid_width, grid_height)
         
         # Update individual tile sizes
         for row in self.tiles:
             for tile in row:
                 tile.size = (tile_size, tile_size)
     
-    def _update_background(self, instance, value):
-        """Keep background updated when window size changes"""
-        self.background.pos = instance.pos
-        self.background.size = instance.size
-    
     def on_keyboard_input(self, letter):
-        """Handle letter key presses on the virtual keyboard"""
+        """Handle letter key presses"""
         if len(self.current_guess) < WORD_LENGTH and not self.game.is_over():
             # Add letter to current guess
             self.current_guess += letter
@@ -179,8 +211,8 @@ class WordleGameUI(BoxLayout):
             # Remove last letter and clear tile
             self.current_guess = self.current_guess[:-1]
             tile.text = ""
-            # Update the tile canvas
-            tile.set_status("default")
+            # Update the tile status
+            self._update_tile_status(tile, "default")
     
     def on_enter(self, instance=None):
         """Submit current guess"""
@@ -207,31 +239,60 @@ class WordleGameUI(BoxLayout):
             # Check game over conditions after animation completes
             Clock.schedule_once(lambda dt: self.check_game_status(), 1.5)
     
-    def animate_reveal_tiles(self, result):
-        """Animate tile reveals one by one with delay"""
-        for col, (char, status) in enumerate(result):
-            tile = self.tiles[self.guess_index][col]
-            # Schedule animation with delay based on position
-            delay = col * 0.2  # Delay each tile by 0.2s
-            Clock.schedule_once(lambda dt, t=tile, s=status: self.reveal_tile(t, s), delay)
-            # Update keyboard status after all tiles are revealed
-            Clock.schedule_once(lambda dt, c=char, s=status: self.keyboard.update_key_status(c, s), 
-                                delay + 0.2)
+    def _update_tile_status(self, tile, status):
+        """Update the visual status of a tile"""
+        with tile.canvas:
+            tile.canvas.clear()
+            if status == "correct":
+                Color(*CORRECT_COLOR)
+            elif status == "present":
+                Color(*PRESENT_COLOR)
+            elif status == "absent":
+                Color(*ABSENT_COLOR)
+            else:
+                Color(*DEFAULT_COLOR)
+            Rectangle(pos=tile.pos, size=tile.size)
+
+            # Add border for default tiles
+            if status == "default":
+                Color(0.3, 0.3, 0.3, 1)
+                Line(rectangle=(tile.x, tile.y, tile.width, tile.height), width=2)
     
-    def reveal_tile(self, tile, status):
-        """Reveal a single tile with animation"""
-        tile.set_status(status)
-        tile.animate_flip()
+    def _animate_tile_flip(self, tile):
+        """Animate the tile flipping"""
+        anim = Animation(opacity=0, duration=0.15) + Animation(opacity=1, duration=0.15)
+        anim.start(tile)
+    
+    def update_key_status(self, letter, status):
+        """Update key status with color change"""
+        letter = letter.upper()
+        if letter in self.keys:
+            key = self.keys[letter]
+            # Only update to a "higher" status (correct > present > absent)
+            if status == "correct":
+                self._set_key_color(key, CORRECT_COLOR)
+            elif status == "present" and key.background_color != CORRECT_COLOR:
+                self._set_key_color(key, PRESENT_COLOR)
+            elif status == "absent" and key.background_color not in [CORRECT_COLOR, PRESENT_COLOR]:
+                self._set_key_color(key, ABSENT_COLOR)
+    
+    def _set_key_color(self, key, color):
+        """Set key color with animation"""
+        key.background_color = color
+        if color != DEFAULT_KEY_COLOR:
+            key.color = WHITE_COLOR
+        else:
+            key.color = DARK_TEXT_COLOR
     
     def show_invalid_word(self):
         """Show animation for invalid word with proper shake and error message"""
         row_tiles = self.tiles[self.guess_index]
-        start_pos = self.grid_container.pos
+        tile_grid = self.ids.tile_grid
+        start_pos = tile_grid.pos
         
         # Create a short toast message that appears and fades out
         toast = Label(
             text="Not in word list",
-            font_name="Roboto",
             font_size=dp(16),
             color=DARK_TEXT_COLOR,
             size_hint=(None, None),
@@ -242,7 +303,7 @@ class WordleGameUI(BoxLayout):
         # Add toast to the layout temporarily
         self.add_widget(toast)
         toast.pos = (self.width/2 - toast.width/2, 
-                     self.grid_container.y - dp(40))
+                     tile_grid.y - dp(40))
         
         # Fade in the toast
         anim_in = Animation(opacity=1, duration=0.2)
@@ -265,14 +326,14 @@ class WordleGameUI(BoxLayout):
             Animation(pos=start_pos, duration=0.1)
         )
         
-        shake_anim.start(self.grid_container)
+        shake_anim.start(tile_grid)
         
         # After shake completes, clear the current guess
         def clear_guess(dt):
             for i in range(len(self.current_guess)):
                 tile = row_tiles[i]
                 tile.text = ""
-                tile.set_status("default")
+                self._update_tile_status(tile, "default")
             self.current_guess = ""
         
         Clock.schedule_once(clear_guess, 1.5)
@@ -320,44 +381,6 @@ class WordleGameUI(BoxLayout):
         content = Label(text=message, font_size=18)
         popup = Popup(title=title, content=content, size_hint=(0.8, 0.3))
         popup.open()
-        
-    def show_settings(self, instance=None):
-        """Show settings popup with theme options"""
-        content = BoxLayout(orientation='vertical', spacing=10, padding=10)
-        
-        from kivy.uix.button import Button
-        colorblind_btn = Button(
-            text="Toggle Colorblind Mode",
-            size_hint_y=None,
-            height=50
-        )
-        colorblind_btn.bind(on_press=lambda x: self.toggle_colorblind_mode())
-        content.add_widget(colorblind_btn)
-        
-        popup = Popup(title="Settings", content=content, size_hint=(0.8, 0.3))
-        close_btn = Button(text="Close", size_hint_y=None, height=50)
-        close_btn.bind(on_press=popup.dismiss)
-        content.add_widget(close_btn)
-        popup.open()
-    
-    def toggle_colorblind_mode(self):
-        """Toggle colorblind mode"""
-        self.theme_manager.toggle_colorblind_mode()
-        # Update all tiles and keyboard colors based on new mode
-        self.refresh_all_colors()
-    
-    def refresh_all_colors(self):
-        """Refresh colors for all UI elements based on current theme"""
-        # Update tiles
-        for row_idx, row in enumerate(self.tiles):
-            for col_idx, tile in enumerate(row):
-                if tile.status != "default":
-                    tile._update_canvas()
-        
-        # Update keyboard
-        for letter, key in self.keyboard.keys.items():
-            if key.bg_color != DEFAULT_KEY_COLOR:
-                key._update_canvas()
     
     def reset_game(self, instance=None):
         """Reset the game with a new word"""
@@ -370,19 +393,104 @@ class WordleGameUI(BoxLayout):
         for row in self.tiles:
             for tile in row:
                 tile.text = ""
-                tile.status = "default"
-                tile._update_canvas()
+                self._update_tile_status(tile, "default")
         
         # Reset keyboard colors
-        for letter, key in self.keyboard.keys.items():
-            key.bg_color = DEFAULT_KEY_COLOR
-            key.color = DARK_TEXT_COLOR
-            key._update_canvas()
+        for letter, key in self.keys.items():
+            self._set_key_color(key, DEFAULT_KEY_COLOR)
+
+    def animate_reveal_tiles(self, result):
+        """Animate the tiles with the results of the guess"""
+        # Ensure the results match the current guess length
+        if len(result) != len(self.tiles[self.guess_index]):
+            return
+
+        # Update each tile with delay for flip effect
+        for i, status in enumerate(result):
+            tile = self.tiles[self.guess_index][i]
+            # Schedule the update with increasing delay
+            Clock.schedule_once(
+                lambda dt, tile=tile, status=status: self._animate_reveal_tile(tile, status),
+                i * 0.2  # Delay increases for each tile
+            )
+            # Also update the keyboard key status
+            Clock.schedule_once(
+                lambda dt, letter=tile.text, status=status: self.update_key_status(letter, status),
+                i * 0.2 + 0.1  # Slightly after tile animation
+            )
+    
+    def _animate_reveal_tile(self, tile, status):
+        """Animate a single tile flip and reveal"""
+        # First half of flip (become invisible)
+        anim1 = Animation(opacity=0, duration=0.15)
+        
+        # Second half of flip (show result and become visible)
+        anim2 = Animation(opacity=1, duration=0.15)
+        
+        # Function to update tile during the middle of the animation
+        def update_tile_status(anim, tile):
+            self._update_tile_status(tile, status)
+        
+        # Bind the update to occur after the first animation
+        anim1.bind(on_complete=update_tile_status)
+        
+        # Chain animations
+        anim = anim1 + anim2
+        anim.start(tile)
 
 class WordleApp(App):
     def build(self):
-        # Set window title
-        self.title = 'Wordle'
-        # White background for the app window
-        Window.clearcolor = (1, 1, 1, 1)
-        return WordleGameUI()
+        try:
+            # Load the KV file
+            Builder.load_file("wordle.kv")
+            
+            # Set window title
+            self.title = 'Wordle'
+            # White background for the app window
+            Window.clearcolor = (1, 1, 1, 1)
+            return WordleGameUI()
+        except Exception as e:
+            print(f"Error during app build: {e}")
+            raise
+
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def wordle():
+    # Serve the Wordle game page directly as a string
+    return """
+    <!DOCTYPE html>
+    <html lang=\"en\" class=\"pz-dont-touch\">
+    <head>
+        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">
+        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+        <meta name=\"theme-color\" content=\"#000000\">
+        <title>Wordle — The New York Times</title>
+        <meta property=\"description\" content=\"Guess the hidden word in 6 tries. A new puzzle is available each day.\">
+        <meta property=\"og:title\" content=\"Wordle - A daily word game\">
+        <meta property=\"og:description\" content=\"Guess the hidden word in 6 tries. A new puzzle is available each day.\">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f7fafc;
+                color: #333;
+            }
+            h1 {
+                text-align: center;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Wordle — The New York Times</h1>
+        <p style=\"text-align: center;\">Guess the hidden word in 6 tries. A new puzzle is available each day.</p>
+    </body>
+    </html>
+    """
+
+if __name__ == "__main__":
+    app.run(debug=True)
