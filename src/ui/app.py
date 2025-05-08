@@ -44,8 +44,17 @@ class KeyButton(Button):
     key_id = StringProperty('')
 
 class WordleGameUI(BoxLayout):
-    tile_grid = ObjectProperty(None)
-    keyboard = ObjectProperty(None)
+    tile_grid = ObjectProperty()
+    keyboard = ObjectProperty()
+
+    def on_kv_post(self, base_widget):
+        """Populate the tile grid after the KV file is loaded."""
+        tile_grid = self.ids.tile_grid
+        tile_grid.clear_widgets()
+
+        for _ in range(6 * 5):  # 6 rows x 5 columns
+            tile = Tile()  # Create a Tile instance
+            tile_grid.add_widget(tile)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -79,7 +88,6 @@ class WordleGameUI(BoxLayout):
         
         # Setup tiles and keyboard
         self.setup_tiles()
-        self.setup_keyboard()
         
         # Window resize callback
         Window.bind(on_resize=self._on_window_resize)
@@ -148,42 +156,6 @@ class WordleGameUI(BoxLayout):
 
         # Force layout update
         self.tile_grid.do_layout()
-    
-    def setup_keyboard(self):
-        """Set up keyboard programmatically"""
-        self.keys = {}
-
-        # Initialize the keyboard layout
-        self.keyboard = BoxLayout(orientation='vertical', spacing=dp(5), size_hint=(None, None))
-        self.keyboard.size = (dp(325), dp(150))
-        self.keyboard.pos_hint = {'center_x': 0.5, 'y': 0.1}
-        self.add_widget(self.keyboard)
-
-        # Define keyboard rows
-        rows = [
-            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-            ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
-        ]
-
-        # Create keys for each row
-        for row in rows:
-            row_layout = BoxLayout(spacing=dp(5), size_hint_y=None, height=dp(50))
-            for key_text in row:
-                key = KeyButton(text=key_text, size_hint=(None, None), size=(dp(30), dp(50)))
-                key.key_id = f'key_{key_text}'
-                self.keys[key_text] = key
-
-                # Bind key events
-                if key_text == 'ENTER':
-                    key.bind(on_press=self.on_enter)
-                elif key_text == '⌫':
-                    key.bind(on_press=self.on_backspace)
-                else:
-                    key.bind(on_press=lambda instance, text=key_text: self.on_keyboard_input(text))
-
-                row_layout.add_widget(key)
-            self.keyboard.add_widget(row_layout)
     
     def _on_window_resize(self, instance, width, height):
         """Handle window resize to maintain proper proportions"""

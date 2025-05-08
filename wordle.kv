@@ -7,10 +7,9 @@
     size_hint: None, None
     size: dp(40), dp(60)
     background_normal: ''
-    background_color: 0.47, 0.47, 0.47, 1
+    background_color: 0.5, 0.5, 0.5, 1
     color: 1, 1, 1, 1
     bold: True
-    key_id: ''
     canvas.before:
         Color:
             rgba: self.background_color
@@ -45,22 +44,24 @@
     tile_grid: tile_grid
     keyboard: keyboard
 
-    FloatLayout:
-        BoxLayout:
-            orientation: 'vertical'
-            size_hint: None, None
-            size: self.minimum_size
-            pos_hint: {"center_x": 0.5, "center_y": 0.5}
-            spacing: dp(30)
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(20)
+        padding: dp(20)
 
-            Label:
-                text: "WORDLE"
-                font_size: '36sp'
-                bold: True
-                halign: 'center'
-                size_hint_y: None
-                height: self.texture_size[1] + dp(10)
+        Label:
+            text: "WORDLE"
+            font_size: '36sp'
+            halign: 'center'
+            valign: 'middle'
+            size_hint_y: None
+            height: self.texture_size[1] + dp(10)
 
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'center'
+            size_hint_y: None
+            height: dp(400)
             GridLayout:
                 id: tile_grid
                 cols: 5
@@ -68,21 +69,21 @@
                 spacing: dp(5)
                 size_hint: None, None
                 size: dp(325), dp(390)
-                pos_hint: {'center_x': 0.5}
 
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'top'
             BoxLayout:
+                id: keyboard
                 orientation: 'vertical'
                 spacing: dp(8)
-                size_hint_y: None
-                height: dp(200)
-                pos_hint: {'center_x': 0.5}
+                size_hint: None, None
+                size: self.minimum_size
 
                 BoxLayout:
                     spacing: dp(5)
                     size_hint: None, None
                     size: self.minimum_size
-                    pos_hint: {'center_x': 0.5}
-
                     KeyButton:
                         text: 'Q'
                     KeyButton:
@@ -109,8 +110,6 @@
                     size_hint: None, None
                     size: self.minimum_size
                     padding: dp(20), 0
-                    pos_hint: {'center_x': 0.5}
-
                     KeyButton:
                         text: 'A'
                     KeyButton:
@@ -134,8 +133,6 @@
                     spacing: dp(5)
                     size_hint: None, None
                     size: self.minimum_size
-                    pos_hint: {'center_x': 0.5}
-
                     KeyButton:
                         text: 'ENTER'
                         size_hint_x: None
