@@ -3,6 +3,7 @@ from kivy.uix.label import Label
 from kivy.graphics import Color, Rectangle, Line, RoundedRectangle
 from kivy.properties import StringProperty, ListProperty, NumericProperty
 from kivy.animation import Animation
+from kivy.metrics import dp
 
 # Color constants for Wordle feedback
 CORRECT_COLOR = (0.416, 0.667, 0.392, 1)  # #6aaa64 (green)
@@ -19,18 +20,22 @@ class Tile(Label):
     border_width = NumericProperty(2)
     
     def __init__(self, **kwargs):
-        # Set default properties
-        kwargs.update({
-            'size_hint': (None, None),
-            'size': (62, 62),
-            'font_name': 'Roboto-Bold',
-            'font_size': 36,
-            'bold': True,
-            'color': WHITE_COLOR,
-            'halign': 'center',
-            'valign': 'middle'
-        })
         super().__init__(**kwargs)
+        self.size_hint = (None, None)
+        self.size = (dp(56), dp(56))
+        self.font_size = dp(32)
+        self.bold = True
+        self.halign = 'center'
+        self.valign = 'middle'
+        self.text_size = self.size
+        self.color = (1, 1, 1, 1)  # White text color
+        self.status = "default"
+
+        with self.canvas.before:
+            Color(0.12, 0.12, 0.12, 1)  # Dark background color
+            Rectangle(pos=self.pos, size=self.size)
+            Color(0.3, 0.3, 0.3, 1)  # Border color
+            Line(rectangle=(self.x, self.y, self.width, self.height), width=2)
         
         # Enable text size to ensure centering works
         self.bind(size=self._update_text_size)
