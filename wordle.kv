@@ -1,0 +1,160 @@
+#:kivy 2.0.0
+#:import dp kivy.metrics.dp
+
+# Define reusable styles for keyboard buttons
+<KeyButton@Button>:
+    font_size: '18sp'
+    size_hint: None, None
+    size: dp(40), dp(60)
+    background_normal: ''
+    background_color: 0.47, 0.47, 0.47, 1
+    color: 1, 1, 1, 1
+    bold: True
+    key_id: ''
+    canvas.before:
+        Color:
+            rgba: self.background_color
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(4)]
+
+# Define the Tile widget style
+<Tile@Label>:
+    size_hint: None, None
+    size: dp(56), dp(56)
+    font_size: dp(32)
+    bold: True
+    halign: 'center'
+    valign: 'middle'
+    text_size: self.size
+    color: 1, 1, 1, 1  # White text color
+    canvas.before:
+        Color:
+            rgba: 0.12, 0.12, 0.12, 1  # Dark background color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: 0.3, 0.3, 0.3, 1  # Border color
+        Line:
+            rectangle: self.x, self.y, self.width, self.height
+            width: 2
+
+<WordleGameUI>:
+    tile_grid: tile_grid
+    keyboard: keyboard
+
+    FloatLayout:
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: None, None
+            size: self.minimum_size
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            spacing: dp(30)
+
+            Label:
+                text: "WORDLE"
+                font_size: '36sp'
+                bold: True
+                halign: 'center'
+                size_hint_y: None
+                height: self.texture_size[1] + dp(10)
+
+            GridLayout:
+                id: tile_grid
+                cols: 5
+                rows: 6
+                spacing: dp(5)
+                size_hint: None, None
+                size: dp(325), dp(390)
+                pos_hint: {'center_x': 0.5}
+
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: dp(8)
+                size_hint_y: None
+                height: dp(200)
+                pos_hint: {'center_x': 0.5}
+
+                BoxLayout:
+                    spacing: dp(5)
+                    size_hint: None, None
+                    size: self.minimum_size
+                    pos_hint: {'center_x': 0.5}
+
+                    KeyButton:
+                        text: 'Q'
+                    KeyButton:
+                        text: 'W'
+                    KeyButton:
+                        text: 'E'
+                    KeyButton:
+                        text: 'R'
+                    KeyButton:
+                        text: 'T'
+                    KeyButton:
+                        text: 'Y'
+                    KeyButton:
+                        text: 'U'
+                    KeyButton:
+                        text: 'I'
+                    KeyButton:
+                        text: 'O'
+                    KeyButton:
+                        text: 'P'
+
+                BoxLayout:
+                    spacing: dp(5)
+                    size_hint: None, None
+                    size: self.minimum_size
+                    padding: dp(20), 0
+                    pos_hint: {'center_x': 0.5}
+
+                    KeyButton:
+                        text: 'A'
+                    KeyButton:
+                        text: 'S'
+                    KeyButton:
+                        text: 'D'
+                    KeyButton:
+                        text: 'F'
+                    KeyButton:
+                        text: 'G'
+                    KeyButton:
+                        text: 'H'
+                    KeyButton:
+                        text: 'J'
+                    KeyButton:
+                        text: 'K'
+                    KeyButton:
+                        text: 'L'
+
+                BoxLayout:
+                    spacing: dp(5)
+                    size_hint: None, None
+                    size: self.minimum_size
+                    pos_hint: {'center_x': 0.5}
+
+                    KeyButton:
+                        text: 'ENTER'
+                        size_hint_x: None
+                        width: dp(65)
+                    KeyButton:
+                        text: 'Z'
+                    KeyButton:
+                        text: 'X'
+                    KeyButton:
+                        text: 'C'
+                    KeyButton:
+                        text: 'V'
+                    KeyButton:
+                        text: 'B'
+                    KeyButton:
+                        text: 'N'
+                    KeyButton:
+                        text: 'M'
+                    KeyButton:
+                        text: '⌫'
+                        size_hint_x: None
+                        width: dp(65)
