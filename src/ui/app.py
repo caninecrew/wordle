@@ -70,7 +70,7 @@ class WordleGameUI(BoxLayout):
         self.guess_index = 0
         self.current_guess = ""
         
-        # Explicitly initialize tile_grid as a GridLayout
+        # Explicitly initialize tile_grid as a GridLayout and add it to the layout
         self.tile_grid = GridLayout(cols=5, rows=6, spacing=dp(5), size_hint=(None, None))
         self.tile_grid.size = (dp(325), dp(390))
         self.tile_grid.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
