@@ -4,6 +4,7 @@ from kivy.uix.button import Button
 from kivy.graphics import Color, RoundedRectangle
 from kivy.properties import ListProperty, StringProperty
 from kivy.animation import Animation
+from kivy.metrics import dp
 
 # Color constants for Wordle feedback (matching tile.py)
 CORRECT_COLOR = (0.416, 0.667, 0.392, 1)  # #6aaa64 (green)
@@ -12,6 +13,22 @@ ABSENT_COLOR = (0.471, 0.486, 0.494, 1)   # #787c7e (gray)
 DEFAULT_KEY_COLOR = (0.82, 0.84, 0.85, 1) # #d3d6da (light gray)
 WHITE_COLOR = (1, 1, 1, 1)                # #ffffff (white)
 DARK_TEXT_COLOR = (0.1, 0.1, 0.1, 1)      # #1a1a1a (near black)
+
+class KeyButton(Button):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.font_size = '18sp'
+        self.size_hint = (None, None)
+        self.size = (dp(40), dp(60))
+        self.background_normal = ''
+        self.background_color = (0.83, 0.84, 0.85, 1)  # #d3d6da
+        self.color = (0, 0, 0, 1)
+        self.bold = True
+        self.key_id = ''
+
+        with self.canvas.before:
+            Color(rgba=self.background_color)
+            RoundedRectangle(pos=self.pos, size=self.size, radius=[dp(4)])
 
 class KeyboardKey(Button):
     bg_color = ListProperty(DEFAULT_KEY_COLOR)
@@ -25,12 +42,12 @@ class KeyboardKey(Button):
         # Set default properties
         kwargs.update({
             'size_hint': (None, None),
-            'size': (40, 60),
+            'size': (dp(40), dp(60)),
             'background_color': (0, 0, 0, 0),  # Transparent background
             'background_normal': '',
             'background_down': '',
             'font_name': 'Roboto',
-            'font_size': 18,
+            'font_size': dp(18),
             'bold': True,
             'color': DARK_TEXT_COLOR,
             'text': self.key_text
@@ -46,7 +63,7 @@ class KeyboardKey(Button):
         self.canvas.before.clear()
         with self.canvas.before:
             Color(*self.bg_color)
-            RoundedRectangle(pos=self.pos, size=self.size, radius=[6])
+            RoundedRectangle(pos=self.pos, size=self.size, radius=[dp(4)])
     
     def _on_press(self, instance):
         """Darken the key when pressed"""
@@ -80,10 +97,10 @@ class OnScreenKeyboard(BoxLayout):
     def __init__(self, **kwargs):
         kwargs.update({
             'orientation': 'vertical',
-            'spacing': 8,
-            'padding': [10, 10, 10, 10],
+            'spacing': dp(8),
+            'padding': [dp(10), dp(10), dp(10), dp(10)],
             'size_hint': (1, None),
-            'height': 200  # Will be adjusted based on key sizes
+            'height': dp(200)  # Will be adjusted based on key sizes
         })
         super().__init__(**kwargs)
         
@@ -91,47 +108,69 @@ class OnScreenKeyboard(BoxLayout):
         self.create_keyboard_layout()
     
     def create_keyboard_layout(self):
-        # Top row: Q-P
-        top_row = BoxLayout(spacing=4, size_hint=(1, None), height=60)
+        # Create keyboard rows
+        self._create_top_row()
+        self._create_middle_row()
+        self._create_bottom_row()
+    
+    def _create_top_row(self):
+        """Create top row: Q W E R T Y U I O P"""
+        row = BoxLayout(spacing=dp(4), size_hint=(1, None), height=dp(60))
+        
+        # Add horizontal centering space
+        row.add_widget(BoxLayout(size_hint_x=None, width=0))
+        
         for letter in "QWERTYUIOP":
             key = KeyboardKey(key_text=letter)
             key.bind(on_press=self.on_key_press)
             self.keys[letter] = key
-            top_row.add_widget(key)
-        self.add_widget(top_row)
+            row.add_widget(key)
         
-        # Middle row: A-L with some padding to center
-        mid_row = BoxLayout(spacing=4, size_hint=(1, None), height=60)
-        mid_row.add_widget(BoxLayout(size_hint_x=0.05))  # Left padding
+        # Add flexible space at the end for centering
+        row.add_widget(BoxLayout(size_hint_x=None, width=0))
+        
+        self.add_widget(row)
+    
+    def _create_middle_row(self):
+        """Create middle row: A S D F G H J K L (centered)"""
+        row = BoxLayout(spacing=dp(4), size_hint=(1, None), height=dp(60))
+        
+        # Add left spacer for centering the middle row
+        row.add_widget(BoxLayout(size_hint_x=None, width=dp(20)))
+        
         for letter in "ASDFGHJKL":
             key = KeyboardKey(key_text=letter)
             key.bind(on_press=self.on_key_press)
             self.keys[letter] = key
-            mid_row.add_widget(key)
-        mid_row.add_widget(BoxLayout(size_hint_x=0.05))  # Right padding
-        self.add_widget(mid_row)
+            row.add_widget(key)
         
-        # Bottom row: ENTER, Z-M, BACKSPACE
-        bottom_row = BoxLayout(spacing=4, size_hint=(1, None), height=60)
+        # Add right spacer for centering
+        row.add_widget(BoxLayout(size_hint_x=None, width=dp(20)))
+        
+        self.add_widget(row)
+    
+    def _create_bottom_row(self):
+        """Create bottom row: ENTER Z X C V B N M ⌫"""
+        row = BoxLayout(spacing=dp(4), size_hint=(1, None), height=dp(60))
         
         # Enter key (wider)
-        enter_key = KeyboardKey(key_text="ENTER", size=(65, 60))
+        enter_key = KeyboardKey(key_text="ENTER", size=(dp(65), dp(60)))
         enter_key.bind(on_press=self.on_enter)
-        bottom_row.add_widget(enter_key)
+        row.add_widget(enter_key)
         
         # Letter keys
         for letter in "ZXCVBNM":
             key = KeyboardKey(key_text=letter)
             key.bind(on_press=self.on_key_press)
             self.keys[letter] = key
-            bottom_row.add_widget(key)
+            row.add_widget(key)
         
         # Backspace key (wider with icon)
-        back_key = KeyboardKey(key_text="⌫", size=(65, 60))
+        back_key = KeyboardKey(key_text="⌫", size=(dp(65), dp(60)))
         back_key.bind(on_press=self.on_backspace)
-        bottom_row.add_widget(back_key)
+        row.add_widget(back_key)
         
-        self.add_widget(bottom_row)
+        self.add_widget(row)
     
     def on_key_press(self, instance):
         """Handle letter key presses and pass to parent"""
