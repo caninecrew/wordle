@@ -44,16 +44,14 @@
     tile_grid: tile_grid
     keyboard: keyboard
 
-    AnchorLayout:
-        anchor_x: 'center'
-        anchor_y: 'center'
-
+    FloatLayout:
         BoxLayout:
             orientation: 'vertical'
+            size_hint: None, None
+            size: min(root.width, dp(400)), min(root.height, dp(800))
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
             spacing: dp(20)
             padding: dp(20)
-            size_hint: None, None
-            width: dp(325)
 
             Label:
                 text: "WORDLE"
@@ -68,152 +66,144 @@
                 cols: 5
                 rows: 6
                 spacing: dp(5)
-                size_hint: None, None
-                size: dp(325), dp(390)
+                size_hint_y: None
+                height: dp(390)
+                size_hint_x: 1
 
             BoxLayout:
                 id: keyboard
                 orientation: 'vertical'
                 spacing: dp(8)
-                size_hint: None, None
-                width: dp(325)
+                size_hint_x: 1
+                size_hint_y: None
                 height: self.minimum_height
 
-                AnchorLayout:
-                    anchor_x: 'center'
+                BoxLayout:
+                    spacing: dp(4)
+                    size_hint_x: 1
                     size_hint_y: None
                     height: dp(48)
-                    BoxLayout:
-                        spacing: dp(4)
+                    KeyButton:
+                        text: 'Q'
                         size_hint_x: None
-                        width: dp(325)
-                        KeyButton:
-                            text: 'Q'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'W'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'E'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'R'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'T'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'Y'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'U'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'I'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'O'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'P'
-                            size_hint_x: None
-                            width: dp(28)
+                        width: dp(28)
+                    KeyButton:
+                        text: 'W'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'E'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'R'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'T'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'Y'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'U'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'I'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'O'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'P'
+                        size_hint_x: None
+                        width: dp(28)
 
-                AnchorLayout:
-                    anchor_x: 'center'
+                BoxLayout:
+                    spacing: dp(4)
+                    size_hint_x: 1
                     size_hint_y: None
                     height: dp(48)
-                    BoxLayout:
-                        spacing: dp(4)
+                    KeyButton:
+                        text: 'A'
                         size_hint_x: None
-                        width: dp(325)
-                        KeyButton:
-                            text: 'A'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'S'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'D'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'F'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'G'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'H'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'J'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'K'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'L'
-                            size_hint_x: None
-                            width: dp(28)
+                        width: dp(28)
+                    KeyButton:
+                        text: 'S'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'D'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'F'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'G'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'H'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'J'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'K'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'L'
+                        size_hint_x: None
+                        width: dp(28)
 
-                AnchorLayout:
-                    anchor_x: 'center'
+                BoxLayout:
+                    spacing: dp(4)
+                    size_hint_x: 1
                     size_hint_y: None
                     height: dp(48)
-                    BoxLayout:
-                        spacing: dp(4)
+                    KeyButton:
+                        text: 'ENTER'
                         size_hint_x: None
-                        width: dp(325)
-                        KeyButton:
-                            text: 'ENTER'
-                            size_hint_x: None
-                            width: dp(55)
-                        KeyButton:
-                            text: 'Z'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'X'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'C'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'V'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'B'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'N'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: 'M'
-                            size_hint_x: None
-                            width: dp(28)
-                        KeyButton:
-                            text: '⌫'
-                            size_hint_x: None
-                            width: dp(55)
+                        width: dp(55)
+                    KeyButton:
+                        text: 'Z'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'X'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'C'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'V'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'B'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'N'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: 'M'
+                        size_hint_x: None
+                        width: dp(28)
+                    KeyButton:
+                        text: '⌫'
+                        size_hint_x: None
+                        width: dp(55)
