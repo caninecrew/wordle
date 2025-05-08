@@ -1,0 +1,25 @@
+# Define the keyboard layout for the Wordle game
+keyboard_layout = [
+    ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+    ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+    ["enter", "z", "x", "c", "v", "b", "n", "m", "backspace"]
+]
+
+# States for keys
+key_states = {
+    "correct": ["a", "o"],
+    "present": ["h"],
+    "absent": ["e", "l", "y", "i", "s", "d", "p"]
+}
+
+# Example function to get key state
+def get_key_state(key):
+    for state, keys in key_states.items():
+        if key in keys:
+            return state
+    return "default"
+
+# Example usage
+for row in keyboard_layout:
+    for key in row:
+        print(f"{key}: {get_key_state(key)}")
