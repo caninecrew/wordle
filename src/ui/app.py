@@ -18,6 +18,7 @@ from .themes import ThemeManager
 
 from kivy.factory import Factory
 from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
 
 # Register the Tile template explicitly
 Factory.register('Tile', cls=Label)
@@ -68,6 +69,12 @@ class WordleGameUI(BoxLayout):
         self.game = WordleGame(self.answer)
         self.guess_index = 0
         self.current_guess = ""
+        
+        # Explicitly initialize tile_grid as a GridLayout
+        self.tile_grid = GridLayout(cols=5, rows=6, spacing=dp(5), size_hint=(None, None))
+        self.tile_grid.size = (dp(325), dp(390))
+        self.tile_grid.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+        self.add_widget(self.tile_grid)
         
         # Setup tiles and keyboard
         self.setup_tiles()
@@ -441,8 +448,8 @@ class WordleGameUI(BoxLayout):
 class WordleApp(App):
     def build(self):
         try:
-            # Load the KV file
-            Builder.load_file("wordle.kv")
+            # Removed reference to 'wordle.kv' as its contents have been integrated into Python files
+            # Builder.load_file("wordle.kv")
             
             # Set window title
             self.title = 'Wordle'
