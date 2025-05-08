@@ -34,126 +34,119 @@
 <WordleGameUI>:
     tile_grid: tile_grid
     keyboard: keyboard
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
-    ScrollView:
-        do_scroll_x: False
-        do_scroll_y: True
-        effect_cls: "ScrollEffect"  # Use this for a more natural scroll feel
-        bar_width: 0  # Hide the scrollbar
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_y: None
+        height: root.height
+        
+        Label:
+            text: 'WORDLE'
+            font_size: '36sp'
+            size_hint_y: None
+            height: dp(80)
+            color: 0, 0, 0, 1
+
+        GridLayout:
+            id: tile_grid
+            cols: 5
+            rows: 6
+            spacing: dp(5)
+            size_hint: None, None
+            width: min(dp(300), root.width - dp(40))
+            height: dp(360)
+            pos_hint: {'center_x': 0.5}
+
+        Widget:
+            size_hint_y: 1
 
         BoxLayout:
+            id: keyboard
             orientation: 'vertical'
-            size_hint: None, None
-            width: root.width
-            height: self.minimum_height
-            padding: dp(20)
-            spacing: dp(20)
+            size_hint_y: None
+            height: dp(180)
+            pos_hint: {'center_x': 0.5}
+            spacing: dp(6)
 
-            Label:
-                text: 'WORDLE'
-                font_size: '36sp'
-                size_hint: None, None
-                size: self.texture_size
-                pos_hint: {'center_x': 0.5}
-                color: 0, 0, 0, 1
-                height: dp(60)
-
-            # Game grid
-            AnchorLayout:
-                size_hint_y: None
-                height: dp(400)
-                GridLayout:
-                    id: tile_grid
-                    cols: 5
-                    rows: 6
-                    spacing: dp(5)
-                    size_hint: None, None
-                    width: min(dp(300), root.width - dp(40))
-                    height: self.width * 1.2
-                    pos_hint: {'center_x': 0.5}
-
-            # Keyboard
             BoxLayout:
-                id: keyboard
-                orientation: 'vertical'
-                size_hint: None, None
-                width: min(dp(350), root.width - dp(40))
-                height: dp(180)
-                pos_hint: {'center_x': 0.5}
-                spacing: dp(6)
+                size_hint_y: None
+                height: dp(48)
+                spacing: dp(4)
+                KeyButton:
+                    text: 'Q'
+                KeyButton:
+                    text: 'W'
+                KeyButton:
+                    text: 'E'
+                KeyButton:
+                    text: 'R'
+                KeyButton:
+                    text: 'T'
+                KeyButton:
+                    text: 'Y'
+                KeyButton:
+                    text: 'U'
+                KeyButton:
+                    text: 'I'
+                KeyButton:
+                    text: 'O'
+                KeyButton:
+                    text: 'P'
 
-                BoxLayout:
-                    size_hint_y: None
-                    height: dp(48)
-                    spacing: dp(4)
-                    KeyButton:
-                        text: 'Q'
-                    KeyButton:
-                        text: 'W'
-                    KeyButton:
-                        text: 'E'
-                    KeyButton:
-                        text: 'R'
-                    KeyButton:
-                        text: 'T'
-                    KeyButton:
-                        text: 'Y'
-                    KeyButton:
-                        text: 'U'
-                    KeyButton:
-                        text: 'I'
-                    KeyButton:
-                        text: 'O'
-                    KeyButton:
-                        text: 'P'
+            BoxLayout:
+                size_hint_y: None
+                height: dp(48)
+                spacing: dp(4)
+                padding: [dp(15), 0]
+                KeyButton:
+                    text: 'A'
+                KeyButton:
+                    text: 'S'
+                KeyButton:
+                    text: 'D'
+                KeyButton:
+                    text: 'F'
+                KeyButton:
+                    text: 'G'
+                KeyButton:
+                    text: 'H'
+                KeyButton:
+                    text: 'J'
+                KeyButton:
+                    text: 'K'
+                KeyButton:
+                    text: 'L'
 
-                BoxLayout:
-                    size_hint_y: None
-                    height: dp(48)
-                    spacing: dp(4)
-                    padding: [dp(15), 0]
-                    KeyButton:
-                        text: 'A'
-                    KeyButton:
-                        text: 'S'
-                    KeyButton:
-                        text: 'D'
-                    KeyButton:
-                        text: 'F'
-                    KeyButton:
-                        text: 'G'
-                    KeyButton:
-                        text: 'H'
-                    KeyButton:
-                        text: 'J'
-                    KeyButton:
-                        text: 'K'
-                    KeyButton:
-                        text: 'L'
-
-                BoxLayout:
-                    size_hint_y: None
-                    height: dp(48)
-                    spacing: dp(4)
-                    KeyButton:
-                        text: 'ENTER'
-                        size_hint_x: None
-                        width: dp(55)
-                    KeyButton:
-                        text: 'Z'
-                    KeyButton:
-                        text: 'X'
-                    KeyButton:
-                        text: 'C'
-                    KeyButton:
-                        text: 'V'
-                    KeyButton:
-                        text: 'B'
-                    KeyButton:
-                        text: 'N'
-                    KeyButton:
-                        text: 'M'
-                    KeyButton:
-                        text: '⌫'
-                        size_hint_x: None
-                        width: dp(55)
+            BoxLayout:
+                size_hint_y: None
+                height: dp(48)
+                spacing: dp(4)
+                KeyButton:
+                    text: 'ENTER'
+                    size_hint_x: None
+                    width: dp(55)
+                KeyButton:
+                    text: 'Z'
+                KeyButton:
+                    text: 'X'
+                KeyButton:
+                    text: 'C'
+                KeyButton:
+                    text: 'V'
+                KeyButton:
+                    text: 'B'
+                KeyButton:
+                    text: 'N'
+                KeyButton:
+                    text: 'M'
+                KeyButton:
+                    text: '⌫'
+                    size_hint_x: None
+                    width: dp(55)
