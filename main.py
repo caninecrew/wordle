@@ -1,7 +1,9 @@
 from kivy.config import Config
 # Configure window size before importing any other Kivy modules
-Config.set('graphics', 'width', '450')
-Config.set('graphics', 'height', '700')
+Config.set('graphics', 'width', '500')  # Slightly wider to prevent cramping
+Config.set('graphics', 'height', '800')  # Taller to ensure keyboard fits
+Config.set('graphics', 'minimum_width', '400')  # Prevent window from being too narrow
+Config.set('graphics', 'minimum_height', '600')  # Prevent window from being too short
 Config.set('graphics', 'resizable', True)
 
 from src.ui.app import WordleApp
